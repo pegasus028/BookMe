@@ -1,0 +1,539 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Booking Console · SWEP Teacher</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f5efe2; --paper-2:#efe7d6; --ink:#241f17; --ink-soft:#5a5142;
+    --gold:#b08400; --gold-deep:#8a6500; --line:#d9cdb4; --line-2:#cabd9f;
+    --green:#3f7a52; --green-bg:#e6efe4; --grey:#b9b09c; --grey-bg:#e7e1d2;
+    --bad:#9c4a36; --bad-bg:#f1e2db;
+    --shadow:0 1px 0 #fff8 inset, 0 8px 26px -18px #3a2f1c80;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:radial-gradient(120% 90% at 50% -8%, #fbf6ea, transparent 55%), var(--paper);
+    color:var(--ink); font-family:"Newsreader",Georgia,serif; font-size:16px; line-height:1.45; padding:0 0 60px}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 20px}
+  header.top{padding:26px 0 8px; border-bottom:1px solid var(--line); margin-bottom:18px;
+    display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap}
+  .eyebrow{font-family:"Space Mono",monospace; font-size:11px; letter-spacing:.22em;
+    text-transform:uppercase; color:var(--gold-deep)}
+  h1{font-family:"Fraunces",serif; font-weight:500; font-size:28px; margin:.16em 0 0}
+  .savebar{display:flex; gap:10px; align-items:center}
+  .status{font-family:"Space Mono",monospace; font-size:12px; color:var(--ink-soft)}
+
+  .btn{font-family:"Newsreader",serif; font-size:15px; padding:9px 14px; border:1px solid var(--gold-deep);
+    border-radius:9px; background:var(--gold); color:#fff7e6; cursor:pointer; -webkit-appearance:none; appearance:none}
+  .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:transparent; color:var(--ink); border-color:var(--line-2)}
+  .btn.sm{font-size:13px; padding:6px 10px}
+  .btn.danger{background:transparent; color:var(--bad); border-color:#c9a99a}
+  .btn[disabled]{opacity:.4; cursor:not-allowed}
+
+  h2{font-family:"Fraunces",serif; font-weight:500; font-size:20px; margin:26px 0 12px;
+    display:flex; align-items:center; gap:10px}
+  h2 .n{font-family:"Space Mono",monospace; font-size:12px; color:var(--gold-deep);
+    border:1px solid var(--line-2); border-radius:6px; padding:1px 7px}
+  .panel{background:var(--paper-2); border:1px solid var(--line); border-radius:14px;
+    padding:16px; box-shadow:var(--shadow)}
+  .tools{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:14px}
+  .tools .grp{display:flex; gap:8px; align-items:center; background:var(--paper); border:1px solid var(--line);
+    border-radius:10px; padding:7px 10px}
+  .tools label{font-family:"Space Mono",monospace; font-size:11px; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--ink-soft)}
+  input[type=date], select{font-family:"Newsreader",serif; font-size:15px; padding:7px 9px;
+    border:1px solid var(--line-2); border-radius:8px; background:var(--paper); color:var(--ink)}
+
+  /* mini calendar */
+  .cal{background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:12px; width:300px}
+  .cal .ch{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px}
+  .cal .ch .m{font-family:"Fraunces",serif; font-weight:500}
+  .cal .nav{cursor:pointer; padding:2px 9px; border:1px solid var(--line-2); border-radius:7px; background:var(--paper-2)}
+  .cal .dow{display:grid; grid-template-columns:repeat(7,1fr); font-family:"Space Mono",monospace;
+    font-size:10px; color:var(--ink-soft); text-align:center; margin-bottom:4px}
+  .cal .days{display:grid; grid-template-columns:repeat(7,1fr); gap:3px}
+  .cal .d{aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:7px;
+    cursor:pointer; font-size:14px; border:1px solid transparent}
+  .cal .d:hover{background:var(--paper-2)}
+  .cal .d.empty{cursor:default}
+  .cal .d.on{background:var(--gold); color:#fff7e6; border-color:var(--gold-deep)}
+  .cal .d.today{border-color:var(--gold-deep)}
+
+  /* grid table */
+  .scroll{overflow:auto; border:1px solid var(--line); border-radius:12px; background:var(--paper)}
+  table.grid{border-collapse:separate; border-spacing:0; min-width:100%; font-size:14px}
+  table.grid th, table.grid td{border-bottom:1px solid var(--line); border-right:1px solid var(--line);
+    padding:6px 8px; text-align:center; white-space:nowrap}
+  table.grid th{background:var(--paper-2); position:sticky; top:0; z-index:2}
+  table.grid .rowctrl, table.grid .colctrl{font-family:"Space Mono",monospace}
+  .icb{cursor:pointer; border:1px solid var(--line-2); border-radius:6px; background:var(--paper);
+    width:24px; height:24px; line-height:1; font-size:15px; padding:0; color:var(--gold-deep)}
+  .icb:hover{background:#fbf6ea}
+  .icb.rm{color:var(--bad)}
+  .grouphdr{font-family:"Space Mono",monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase}
+  .grouphdr input{width:100%; min-width:90px; border:1px dashed var(--line-2); background:transparent;
+    text-align:center; font-family:inherit; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--gold-deep)}
+  .grptime{font-family:"Space Mono",monospace; font-size:11px; color:var(--ink-soft)}
+  .slotid{font-family:"Space Mono",monospace; font-size:11px; color:var(--ink-soft)}
+  .timecell{display:flex; flex-direction:column; align-items:center; gap:2px}
+  .timepair{display:flex; align-items:center; gap:4px; font-family:"Space Mono",monospace; font-size:12px}
+  .step{display:flex; flex-direction:column}
+  .step button{width:18px; height:14px; line-height:1; font-size:10px; padding:0; border:1px solid var(--line-2);
+    background:var(--paper); cursor:pointer; color:var(--ink-soft)}
+  .step button:first-child{border-radius:4px 4px 0 0}
+  .step button:last-child{border-radius:0 0 4px 4px; border-top:none}
+  .rowdate{font-family:"Fraunces",serif; font-weight:600; font-size:16px}
+  .rowday{font-family:"Space Mono",monospace; font-size:11px; color:var(--gold-deep)}
+  td.book{font-size:13px}
+  td.cellU{background:var(--grey-bg); color:var(--grey)}
+  td.cellBooked{background:var(--green-bg)}
+  td.cellBooked .who{color:var(--green); font-weight:500}
+  td.cellOpen{color:var(--ink-soft)}
+  .avbtn{font-family:"Space Mono",monospace; font-size:10px; letter-spacing:.06em; text-transform:uppercase;
+    cursor:pointer; border:1px solid var(--line-2); border-radius:6px; padding:2px 6px; background:var(--paper); color:var(--ink-soft)}
+  .avbtn.off{background:var(--grey-bg)}
+  .rmbk{cursor:pointer; color:var(--bad); border:none; background:none; font-size:12px; padding:0 0 0 4px}
+
+  /* reports */
+  .reports{display:grid; grid-template-columns:1.3fr 1fr; gap:18px}
+  @media(max-width:900px){.reports{grid-template-columns:1fr} .cal{width:100%}}
+  table.rep{width:100%; border-collapse:collapse; font-size:14px}
+  table.rep th, table.rep td{text-align:left; padding:7px 9px; border-bottom:1px solid var(--line)}
+  table.rep th{font-family:"Space Mono",monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-soft)}
+  .chips{display:flex; flex-wrap:wrap; gap:6px}
+  .chip{font-size:13px; background:var(--paper); border:1px solid var(--line-2); border-radius:99px; padding:3px 10px}
+  .muted{color:var(--ink-soft)}
+  .count{font-family:"Space Mono",monospace; font-size:12px; color:var(--gold-deep)}
+
+  .toast{position:fixed; right:20px; bottom:20px; background:var(--ink); color:var(--paper);
+    padding:11px 16px; border-radius:10px; font-size:15px; opacity:0; transform:translateY(14px);
+    transition:.2s; z-index:60}
+  .toast.show{opacity:1; transform:none}
+  .toast.err{background:var(--bad)}
+  .gate{position:fixed; inset:0; background:#241f17e6; display:flex; align-items:center; justify-content:center; z-index:80}
+  .gate .box{background:var(--paper); border-radius:14px; padding:26px; width:330px; text-align:center; box-shadow:var(--shadow)}
+  .gate h3{font-family:"Fraunces",serif; font-weight:500; margin:0 0 4px}
+  .gate input{width:100%; margin:12px 0; text-align:center; padding:11px; font-size:18px}
+  .hint{font-size:13px; color:var(--ink-soft)}
+  .hidden{display:none !important}
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate">
+  <div class="box">
+    <div class="eyebrow">Satriwithaya · English Program</div>
+    <h3>Booking Console</h3>
+    <p class="hint">Teacher passcode required.</p>
+    <input type="password" id="passInput" placeholder="Passcode" autocomplete="off">
+    <button class="btn" id="passBtn" style="width:100%">Enter</button>
+    <p class="hint" id="passErr" style="color:var(--bad)"></p>
+  </div>
+</div>
+
+<div class="wrap" id="app" style="filter:blur(4px)">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Satriwithaya · English Program</div>
+      <h1>Booking Console</h1>
+    </div>
+    <div class="savebar">
+      <span class="status" id="saveStatus">Loading…</span>
+      <button class="btn ghost sm" id="btnReload">Reload</button>
+      <button class="btn" id="btnSave">Save schedule</button>
+    </div>
+  </header>
+
+  <h2><span class="n">1</span> Open dates</h2>
+  <div class="panel">
+    <div class="tools">
+      <div class="cal" id="cal"></div>
+      <div style="display:flex; flex-direction:column; gap:10px">
+        <div class="grp">
+          <label>Add date</label>
+          <input type="date" id="dateInput">
+          <button class="btn sm" id="btnAddDate">Add row</button>
+        </div>
+        <div class="grp">
+          <label>Range</label>
+          <input type="date" id="rangeFrom"><span class="muted">→</span><input type="date" id="rangeTo">
+          <select id="rangeDays" title="Which weekdays">
+            <option value="weekday">Mon–Fri</option>
+            <option value="all">Every day</option>
+          </select>
+          <button class="btn sm" id="btnAddRange">Add range</button>
+        </div>
+        <p class="hint">Click days on the calendar to toggle them, or add a row/range. Each row gets the current column template.</p>
+      </div>
+    </div>
+  </div>
+
+  <h2><span class="n">2</span> Timeslots &amp; reservations</h2>
+  <div class="panel">
+    <div class="tools">
+      <button class="btn ghost sm" id="btnAddCol">+ Add timeslot column</button>
+      <div class="grp">
+        <label>Filter class</label>
+        <select id="filterClass"><option value="">All classes</option></select>
+      </div>
+      <div class="grp">
+        <label>Weekly template</label>
+        <button class="btn ghost sm" id="btnSaveTpl">Save week as template</button>
+        <button class="btn ghost sm" id="btnApplyTpl" disabled>Apply to next week</button>
+      </div>
+    </div>
+    <div class="scroll"><table class="grid" id="grid"></table></div>
+    <p class="hint" style="margin-top:10px">Time arrows move in 5-minute steps. Each slot's start auto-follows the slot to its left. Click a group label to rename; click <b>Avail/Unavail</b> on any cell to lock a slot for that date.</p>
+  </div>
+
+  <h2><span class="n">3</span> Reports</h2>
+  <div class="reports">
+    <div class="panel">
+      <h2 style="margin:0 0 10px; font-size:17px">Reservations <span class="count" id="bkCount"></span></h2>
+      <table class="rep"><thead><tr><th>Date</th><th>Time</th><th>Class</th><th>Name</th><th></th></tr></thead>
+        <tbody id="bkBody"></tbody></table>
+    </div>
+    <div class="panel">
+      <h2 style="margin:0 0 10px; font-size:17px">Not yet booked <span class="count" id="unCount"></span></h2>
+      <div id="unBody"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ====== CONFIG ====== */
+const API_URL = "https://script.google.com/macros/s/AKfycbwYyLV6xgQOzi14X_YOoYtRuQc8WlZkGiWfGFMxWhIfi0iLv_tZB_IVD7kfBvRrByR99A/exec";
+/* ==================== */
+
+let STATE = null;       // server state
+let SCHED = null;       // editable local copy of schedule
+let PASS = "";
+let TEMPLATE = null;    // saved column+offset template
+const $ = s => document.querySelector(s);
+const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+/* ---- utilities ---- */
+function toast(m, err){ const t=$("#toast"); t.textContent=m; t.className="toast show"+(err?" err":"");
+  clearTimeout(t._t); t._t=setTimeout(()=>t.className="toast",2600); }
+function pad(n){ return String(n).padStart(2,"0"); }
+function isoOf(y,m,d){ return `${y}-${pad(m)}-${pad(d)}`; }
+function parseISO(s){ const p=String(s).split("-").map(Number); return new Date(p[0],p[1]-1,p[2]); }
+function dayOf(s){ return DAYS[parseISO(s).getDay()]; }
+function toMin(t){ const [h,m]=t.split(":").map(Number); return h*60+m; }
+function toHHMM(min){ min=((min%1440)+1440)%1440; return pad(Math.floor(min/60))+":"+pad(min%60); }
+function nextId(){ let max=0; SCHED.columns.forEach(c=>{const n=+String(c.id).replace(/\D/g,"");if(n>max)max=n;}); return "ts"+(max+1); }
+
+async function fetchState(){
+  const r = await fetch(API_URL); return await r.json();
+}
+async function api(body){
+  try{
+    const r = await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(body)});
+    return await r.json();
+  }catch(e){
+    try{ await fetch(API_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(body)}); }catch(_){}
+    return {ok:null, fallback:true};
+  }
+}
+
+async function load(){
+  $("#saveStatus").textContent="Loading…";
+  try{ STATE = await fetchState(); }
+  catch(e){ $("#saveStatus").textContent="Server unreachable"; return; }
+  SCHED = JSON.parse(JSON.stringify(STATE.schedule));
+  SCHED.rows = SCHED.rows || [];
+  $("#saveStatus").textContent="Loaded · unsaved changes show here";
+  renderClasses(); renderCal(); renderGrid(); renderReports();
+}
+
+/* ---- save ---- */
+async function save(){
+  $("#saveStatus").textContent="Saving…";
+  const r = await api({action:"saveSchedule", pass:PASS, schedule:SCHED});
+  if(r && r.ok && r.state){ STATE=r.state; SCHED=JSON.parse(JSON.stringify(STATE.schedule));
+    $("#saveStatus").textContent="Saved ✓"; toast("Schedule saved"); renderAll();
+  }else if(r && r.fallback){
+    STATE = await fetchState(); SCHED=JSON.parse(JSON.stringify(STATE.schedule));
+    $("#saveStatus").textContent="Saved ✓"; toast("Schedule saved"); renderAll();
+  }else if(r && r.error==="bad passcode"){
+    $("#saveStatus").textContent="Passcode rejected"; toast("Passcode rejected — reload and re-enter", true);
+  }else{ $("#saveStatus").textContent="Save failed"; toast("Save failed", true); }
+}
+
+/* ---- calendar ---- */
+let calY, calM;
+function renderCal(){
+  const now=new Date(); if(calY===undefined){calY=now.getFullYear(); calM=now.getMonth();}
+  const open=new Set(SCHED.rows.map(r=>r.date));
+  const first=new Date(calY,calM,1), start=first.getDay(), dim=new Date(calY,calM+1,0).getDate();
+  const monName=first.toLocaleString("en",{month:"long",year:"numeric"});
+  let h=`<div class="ch"><span class="nav" id="calPrev">‹</span><span class="m">${monName}</span><span class="nav" id="calNext">›</span></div>`;
+  h+=`<div class="dow">${["S","M","T","W","T","F","S"].map(x=>`<span>${x}</span>`).join("")}</div><div class="days">`;
+  for(let i=0;i<start;i++) h+=`<div class="d empty"></div>`;
+  const todayISO=isoOf(now.getFullYear(),now.getMonth()+1,now.getDate());
+  for(let d=1;d<=dim;d++){ const iso=isoOf(calY,calM+1,d);
+    h+=`<div class="d${open.has(iso)?" on":""}${iso===todayISO?" today":""}" data-iso="${iso}">${d}</div>`; }
+  h+=`</div>`;
+  $("#cal").innerHTML=h;
+  $("#calPrev").onclick=()=>{calM--; if(calM<0){calM=11;calY--;} renderCal();};
+  $("#calNext").onclick=()=>{calM++; if(calM>11){calM=0;calY++;} renderCal();};
+  $("#cal").querySelectorAll(".d[data-iso]").forEach(el=> el.onclick=()=>toggleDate(el.dataset.iso));
+}
+function toggleDate(iso){
+  const i = SCHED.rows.findIndex(r=>r.date===iso);
+  if(i>=0) SCHED.rows.splice(i,1); else addDate(iso);
+  SCHED.rows.sort((a,b)=>a.date<b.date?-1:1);
+  renderAll(); markDirty();
+}
+function addDate(iso){
+  if(SCHED.rows.some(r=>r.date===iso)) return;
+  SCHED.rows.push({date:iso, day:dayOf(iso), unavailable:{}});
+  SCHED.rows.sort((a,b)=>a.date<b.date?-1:1);
+}
+function markDirty(){ $("#saveStatus").textContent="Unsaved changes — click Save"; }
+
+/* ---- column (timeslot) editing ---- */
+function addColumn(){
+  const last = SCHED.columns[SCHED.columns.length-1];
+  const start = last ? last.end : "08:00";
+  const end = toHHMM(toMin(start)+15);
+  SCHED.columns.push({id:nextId(), group:last?last.group:"", start, end, unavailable:false});
+  reflowTimes(); renderGrid(); markDirty();
+}
+function removeColumn(idx){
+  if(SCHED.columns.length<=1){ toast("Keep at least one timeslot",true); return; }
+  SCHED.columns.splice(idx,1); reflowTimes(); renderGrid(); markDirty();
+}
+function reflowTimes(){
+  // Adjacency: each slot's start = previous slot's end. Slot 0 keeps its own start.
+  for(let i=1;i<SCHED.columns.length;i++){
+    const prev=SCHED.columns[i-1], cur=SCHED.columns[i];
+    const dur = Math.max(5, toMin(cur.end)-toMin(cur.start));
+    cur.start = prev.end;
+    cur.end = toHHMM(toMin(cur.start)+dur);
+  }
+}
+function stepTime(idx, which, delta){
+  const c=SCHED.columns[idx];
+  if(which==="start"){
+    if(idx===0){ // first slot's start floats; keep duration
+      const dur=toMin(c.end)-toMin(c.start);
+      c.start=toHHMM(toMin(c.start)+delta);
+      c.end=toHHMM(toMin(c.start)+Math.max(5,dur));
+    }else{ // can't move a follower's start independently; nudge previous end instead
+      stepTime(idx-1,"end",delta); return;
+    }
+  }else{ // end
+    let e=toMin(c.end)+delta;
+    if(e<=toMin(c.start)+4) e=toMin(c.start)+5; // min 5-min slot
+    c.end=toHHMM(e);
+  }
+  reflowTimes(); renderGrid(); markDirty();
+}
+function renameGroup(idx, val){ SCHED.columns[idx].group=val; renderGrid(); markDirty(); }
+function toggleColUnavail(idx){ SCHED.columns[idx].unavailable=!SCHED.columns[idx].unavailable; renderGrid(); markDirty(); }
+function toggleCellUnavail(date, slotId){
+  const row=SCHED.rows.find(r=>r.date===date); if(!row) return;
+  row.unavailable=row.unavailable||{};
+  if(row.unavailable[slotId]) delete row.unavailable[slotId]; else row.unavailable[slotId]=true;
+  renderGrid(); markDirty();
+}
+function removeRow(date){ const i=SCHED.rows.findIndex(r=>r.date===date); if(i>=0){SCHED.rows.splice(i,1); renderAll(); markDirty();} }
+
+/* ---- grid render ---- */
+function groupSpans(){
+  const spans=[]; SCHED.columns.forEach((c,i)=>{ const l=c.group||"";
+    const last=spans[spans.length-1];
+    if(last && last.label===l) last.span++; else spans.push({label:l, span:1, firstIdx:i}); });
+  return spans;
+}
+function bookMap(){ const m=new Map(); STATE.bookings.forEach(b=>m.set(b.date+"|"+b.slotId,b)); return m; }
+function renderGrid(){
+  const cols=SCHED.columns, spans=groupSpans(), bm=bookMap();
+  const filter=$("#filterClass").value;
+  let h="";
+  // row 1: add/remove column controls
+  h+="<thead>";
+  h+="<tr><th></th><th colspan='2'></th>";
+  cols.forEach((c,i)=> h+=`<th class="colctrl"><button class="icb" data-act="colplus" data-i="${i}" title="Add column after">+</button> <button class="icb rm" data-act="colminus" data-i="${i}" title="Remove column">−</button></th>`);
+  h+="</tr>";
+  // row 2: group labels (editable, merged)
+  h+="<tr><th></th><th colspan='2'></th>";
+  spans.forEach(s=> h+=`<th class="grouphdr" colspan="${s.span}"><input value="${s.label.replace(/"/g,'&quot;')}" data-act="group" data-i="${s.firstIdx}" placeholder="—"></th>`);
+  h+="</tr>";
+  // row 3: group time reflection
+  h+="<tr><th></th><th colspan='2'></th>";
+  spans.forEach(s=>{ const a=cols[s.firstIdx].start, b=cols[s.firstIdx+s.span-1].end;
+    h+=`<th class="grptime" colspan="${s.span}">${a}–${b}</th>`; });
+  h+="</tr>";
+  // row 4: slot id + avail toggle
+  h+="<tr><th></th><th>Date</th><th>Day</th>";
+  cols.forEach((c,i)=> h+=`<th><div class="slotid">${c.id}</div><span class="avbtn ${c.unavailable?'off':''}" data-act="colav" data-i="${i}">${c.unavailable?'Locked':'Open'}</span></th>`);
+  h+="</tr>";
+  // row 5: per-slot time steppers
+  h+="<tr><th></th><th colspan='2'></th>";
+  cols.forEach((c,i)=> h+=`<th><div class="timecell">
+      <div class="timepair"><span>${c.start}</span><span class="step"><button data-act="su" data-i="${i}">▲</button><button data-act="sd" data-i="${i}">▼</button></span></div>
+      <div class="timepair"><span>${c.end}</span><span class="step"><button data-act="eu" data-i="${i}">▲</button><button data-act="ed" data-i="${i}">▼</button></span></div>
+    </div></th>`);
+  h+="</tr></thead><tbody>";
+
+  if(SCHED.rows.length===0){
+    h+=`<tr><td colspan="${cols.length+3}" class="muted" style="padding:18px">No dates yet — add some above.</td></tr>`;
+  }
+  SCHED.rows.forEach(rw=>{
+    const f=parseISO(rw.date);
+    h+=`<tr><td class="rowctrl"><button class="icb rm" data-act="rowdel" data-d="${rw.date}" title="Remove date">−</button></td>`;
+    h+=`<td><span class="rowdate">${f.getDate()}</span></td><td><span class="rowday">${rw.day||dayOf(rw.date)}</span></td>`;
+    cols.forEach(c=>{
+      const key=rw.date+"|"+c.id, bk=bm.get(key);
+      const rowU = rw.unavailable && rw.unavailable[c.id];
+      const unavail = c.unavailable || rowU;
+      if(unavail){
+        h+=`<td class="cellU book"><div>Unavailable</div><span class="avbtn off" data-act="cellav" data-d="${rw.date}" data-s="${c.id}">${c.unavailable?'col-locked':'unlock'}</span></td>`;
+      }else if(bk){
+        const hide = filter && bk.cls!==filter;
+        h+=`<td class="cellBooked book">${hide?'<span class="muted">—</span>':`<span class="who">${bk.nick}</span> <span class="muted">(${bk.cls})</span><button class="rmbk" data-act="unbk" data-d="${rw.date}" data-s="${c.id}" title="Remove booking">✕</button>`}</td>`;
+      }else{
+        h+=`<td class="cellOpen book">open <span class="avbtn" data-act="cellav" data-d="${rw.date}" data-s="${c.id}">lock</span></td>`;
+      }
+    });
+    h+=`</tr>`;
+  });
+  h+="</tbody>";
+  $("#grid").innerHTML=h;
+  wireGrid();
+}
+function wireGrid(){
+  const g=$("#grid");
+  g.querySelectorAll("[data-act]").forEach(el=>{
+    const act=el.dataset.act, i=+el.dataset.i;
+    if(act==="group"){ el.onchange=()=>renameGroup(i, el.value); return; }
+    el.onclick=()=>{
+      switch(act){
+        case "colplus": insertColumnAfter(i); break;
+        case "colminus": removeColumn(i); break;
+        case "colav": toggleColUnavail(i); break;
+        case "su": stepTime(i,"start",5); break;
+        case "sd": stepTime(i,"start",-5); break;
+        case "eu": stepTime(i,"end",5); break;
+        case "ed": stepTime(i,"end",-5); break;
+        case "rowdel": removeRow(el.dataset.d); break;
+        case "cellav": toggleCellUnavail(el.dataset.d, el.dataset.s); break;
+        case "unbk": adminUnbook(el.dataset.d, el.dataset.s); break;
+      }
+    };
+  });
+}
+function insertColumnAfter(idx){
+  const ref=SCHED.columns[idx];
+  const start=ref.end, end=toHHMM(toMin(start)+15);
+  SCHED.columns.splice(idx+1,0,{id:nextId(), group:ref.group, start, end, unavailable:false});
+  reflowTimes(); renderGrid(); markDirty();
+}
+async function adminUnbook(date, slotId){
+  if(!confirm("Remove this student's reservation?")) return;
+  const r=await api({action:"adminCancel", pass:PASS, date, slotId});
+  if(r && r.ok && r.state){ STATE=r.state; renderAll(); toast("Reservation removed"); }
+  else if(r && r.fallback){ STATE=await fetchState(); renderAll(); toast("Reservation removed"); }
+  else toast("Could not remove", true);
+}
+
+/* ---- dates: add single / range ---- */
+$("#btnAddDate").onclick=()=>{ const v=$("#dateInput").value; if(!v){toast("Pick a date",true);return;} addDate(v); renderAll(); markDirty(); };
+$("#btnAddRange").onclick=()=>{
+  const a=$("#rangeFrom").value, b=$("#rangeTo").value, mode=$("#rangeDays").value;
+  if(!a||!b){toast("Pick both dates",true);return;}
+  let d=parseISO(a), end=parseISO(b), added=0;
+  while(d<=end){
+    const wd=d.getDay();
+    if(mode==="all" || (wd>=1&&wd<=5)){ addDate(isoOf(d.getFullYear(),d.getMonth()+1,d.getDate())); added++; }
+    d.setDate(d.getDate()+1);
+  }
+  renderAll(); markDirty(); toast(added+" date(s) added");
+};
+
+/* ---- weekly template ---- */
+$("#btnSaveTpl").onclick=()=>{
+  TEMPLATE = { columns: JSON.parse(JSON.stringify(SCHED.columns)) };
+  $("#btnApplyTpl").disabled=false; toast("Template saved from current columns");
+};
+$("#btnApplyTpl").onclick=()=>{
+  if(!TEMPLATE) return;
+  // Apply template columns, and clone the existing dated rows forward by 7 days.
+  SCHED.columns = JSON.parse(JSON.stringify(TEMPLATE.columns));
+  const existing = SCHED.rows.map(r=>r.date);
+  existing.forEach(iso=>{
+    const d=parseISO(iso); d.setDate(d.getDate()+7);
+    addDate(isoOf(d.getFullYear(),d.getMonth()+1,d.getDate()));
+  });
+  reflowTimes(); renderAll(); markDirty(); toast("Template applied; next week's dates added");
+};
+
+/* ---- reports ---- */
+function renderClasses(){
+  const sel=$("#filterClass"); const cur=sel.value;
+  sel.innerHTML='<option value="">All classes</option>';
+  Object.keys(STATE.roster).sort().forEach(c=>{const o=document.createElement("option");o.value=c;o.textContent="Class "+c;sel.appendChild(o);});
+  if(cur) sel.value=cur;
+}
+function renderReports(){
+  const filter=$("#filterClass").value;
+  const colById={}; SCHED.columns.forEach(c=>colById[c.id]=c);
+  // reservations
+  let rows = STATE.bookings.slice().filter(b=>!filter||b.cls===filter);
+  rows.sort((a,b)=> a.date<b.date?-1:a.date>b.date?1:(a.slotId<b.slotId?-1:1));
+  $("#bkCount").textContent="("+rows.length+")";
+  $("#bkBody").innerHTML = rows.length? rows.map(b=>{
+    const c=colById[b.slotId]; const f=parseISO(b.date);
+    return `<tr><td>${f.getDate()} ${dayOf(b.date)}</td><td>${c?c.start+"–"+c.end:b.slotId}</td><td>${b.cls}</td><td>${b.nick}</td>
+      <td><button class="rmbk" data-d="${b.date}" data-s="${b.slotId}">✕</button></td></tr>`;
+  }).join("") : `<tr><td colspan="5" class="muted">No reservations yet.</td></tr>`;
+  $("#bkBody").querySelectorAll(".rmbk").forEach(b=> b.onclick=()=>adminUnbook(b.dataset.d,b.dataset.s));
+
+  // unreserved roster
+  const bookedSet=new Set(STATE.bookings.map(b=>b.cls+"|"+b.nick));
+  const classes = filter? [filter] : Object.keys(STATE.roster).sort();
+  let totalUn=0, html="";
+  classes.forEach(cls=>{
+    const un=(STATE.roster[cls]||[]).filter(n=>!bookedSet.has(cls+"|"+n));
+    totalUn+=un.length;
+    html+=`<div style="margin-bottom:12px"><div class="muted" style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">Class ${cls} · ${un.length} left</div>`;
+    html+= un.length? `<div class="chips">${un.map(n=>`<span class="chip">${n}</span>`).join("")}</div>` : `<span class="muted">Everyone has booked ✓</span>`;
+    html+=`</div>`;
+  });
+  $("#unCount").textContent="("+totalUn+")";
+  $("#unBody").innerHTML=html;
+}
+
+function renderAll(){ renderCal(); renderGrid(); renderReports(); }
+
+/* ---- wiring ---- */
+$("#btnAddCol").onclick=addColumn;
+$("#btnSave").onclick=save;
+$("#btnReload").onclick=load;
+$("#filterClass").onchange=()=>{ renderGrid(); renderReports(); };
+
+/* ---- passcode gate ---- */
+function tryEnter(){
+  const v=$("#passInput").value;
+  if(!v){ return; }
+  PASS=v;
+  $("#gate").classList.add("hidden"); $("#app").style.filter="none";
+  load();
+}
+$("#passBtn").onclick=tryEnter;
+$("#passInput").addEventListener("keydown",e=>{ if(e.key==="Enter") tryEnter(); });
+$("#passInput").focus();
+</script>
+</body>
+</html>

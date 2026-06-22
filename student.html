@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Book a Timeslot · SWEP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f5efe2; --paper-2:#efe7d6; --ink:#241f17; --ink-soft:#5a5142;
+    --gold:#b08400; --gold-deep:#8a6500; --line:#d9cdb4;
+    --green:#3f7a52; --green-bg:#e6efe4; --grey:#b9b09c; --grey-bg:#e7e1d2;
+    --bad:#9c4a36; --shadow:0 1px 0 #fff8 inset, 0 8px 24px -16px #3a2f1c66;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:
+      radial-gradient(120% 100% at 50% -10%, #fbf6ea, transparent 60%),
+      var(--paper);
+    color:var(--ink); font-family:"Newsreader",Georgia,serif;
+    font-size:17px; line-height:1.5; padding:env(safe-area-inset-top) 0 40px;
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:680px; margin:0 auto; padding:0 16px}
+  header.top{padding:22px 0 14px; text-align:center}
+  .eyebrow{font-family:"Space Mono",monospace; font-size:11px; letter-spacing:.22em;
+    text-transform:uppercase; color:var(--gold-deep)}
+  h1{font-family:"Fraunces",serif; font-weight:500; font-size:30px; margin:.18em 0 .1em; line-height:1.05}
+  .sub{color:var(--ink-soft); font-size:15px}
+
+  .card{background:var(--paper-2); border:1px solid var(--line); border-radius:14px;
+    padding:16px; margin:14px 0; box-shadow:var(--shadow)}
+  .card h2{font-family:"Fraunces",serif; font-weight:500; font-size:18px; margin:0 0 10px}
+  label.fld{display:block; font-family:"Space Mono",monospace; font-size:11px;
+    letter-spacing:.12em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 6px}
+  select, .btn, input{font-family:"Newsreader",serif; font-size:17px}
+  select{width:100%; padding:13px 12px; border:1px solid var(--line); border-radius:10px;
+    background:var(--paper); color:var(--ink); -webkit-appearance:none; appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238a6500' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 12px center}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  @media(max-width:430px){.row2{grid-template-columns:1fr}}
+
+  .btn{display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    padding:13px 16px; border:1px solid var(--gold-deep); border-radius:10px; cursor:pointer;
+    background:var(--gold); color:#fff7e6; -webkit-text-fill-color:#fff7e6;
+    -webkit-appearance:none; appearance:none; font-weight:500; width:100%}
+  .btn:active{transform:translateY(1px)}
+  .btn[disabled]{opacity:.45; cursor:not-allowed}
+  .btn.ghost{background:transparent; color:var(--ink); -webkit-text-fill-color:var(--ink);
+    border-color:var(--line)}
+  .btn.danger{background:transparent; color:var(--bad); -webkit-text-fill-color:var(--bad);
+    border-color:#c9a99a}
+
+  .toggle{display:flex; align-items:center; gap:10px; justify-content:space-between;
+    background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:10px 12px}
+  .toggle .lbl{font-size:15px; color:var(--ink-soft)}
+  .sw{position:relative; width:46px; height:26px; flex:0 0 auto}
+  .sw input{position:absolute; opacity:0; width:100%; height:100%; margin:0}
+  .sw span{position:absolute; inset:0; background:var(--grey-bg); border:1px solid var(--line);
+    border-radius:99px; transition:.18s}
+  .sw span:before{content:""; position:absolute; width:20px; height:20px; left:3px; top:2px;
+    background:#fff; border-radius:50%; box-shadow:0 1px 3px #0003; transition:.18s}
+  .sw input:checked + span{background:var(--gold)}
+  .sw input:checked + span:before{transform:translateX(20px)}
+
+  /* schedule grid */
+  .dategroup{margin-top:18px}
+  .dhead{display:flex; align-items:baseline; gap:10px; margin:0 2px 8px}
+  .dnum{font-family:"Fraunces",serif; font-weight:600; font-size:22px}
+  .dday{font-family:"Space Mono",monospace; font-size:12px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--gold-deep)}
+  .grp{margin:0 0 6px}
+  .grplbl{font-family:"Space Mono",monospace; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--ink-soft); margin:8px 2px 5px}
+  .slots{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px}
+  .slot{border:1px solid var(--line); border-radius:11px; padding:11px 12px; background:var(--paper);
+    text-align:left; cursor:pointer; -webkit-appearance:none; appearance:none; color:var(--ink);
+    -webkit-text-fill-color:var(--ink); transition:.12s; min-height:64px}
+  .slot:active{transform:translateY(1px)}
+  .slot .time{font-family:"Space Mono",monospace; font-size:13px; color:var(--ink-soft)}
+  .slot .st{display:block; margin-top:4px; font-size:15px}
+  .slot.avail{border-color:#cdbf9d}
+  .slot.avail:hover{border-color:var(--gold); background:#fbf6ea}
+  .slot.taken{background:var(--paper-2); cursor:default; opacity:.92}
+  .slot.taken .st{color:var(--ink-soft)}
+  .slot.mine{background:var(--green-bg); border-color:#bcd3bc}
+  .slot.mine .st{color:var(--green); font-weight:500}
+  .slot.unavail{background:var(--grey-bg); border-color:var(--line); cursor:default; color:var(--grey);
+    -webkit-text-fill-color:var(--grey)}
+  .slot.unavail .time{color:var(--grey)}
+  /* dim mode: grey out unavailable, lift available */
+  body.dim .slot.unavail{opacity:.35}
+  body.dim .slot.taken{opacity:.5}
+  body.dim .slot.avail{box-shadow:0 0 0 2px #b0840033}
+
+  .pill{display:inline-block; font-family:"Space Mono",monospace; font-size:11px;
+    letter-spacing:.1em; text-transform:uppercase; padding:2px 8px; border-radius:99px;
+    background:var(--green-bg); color:var(--green); border:1px solid #bcd3bc}
+  .note{font-size:14px; color:var(--ink-soft); margin:8px 2px 0}
+  .toast{position:fixed; left:50%; bottom:22px; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:var(--paper); padding:11px 16px; border-radius:10px;
+    font-size:15px; opacity:0; transition:.22s; pointer-events:none; z-index:50; max-width:90vw; text-align:center}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+  .toast.err{background:var(--bad)}
+  .empty{color:var(--ink-soft); font-style:italic; padding:18px 2px}
+  .loading{text-align:center; color:var(--ink-soft); padding:30px}
+  .hidden{display:none !important}
+  .mineband{background:var(--green-bg); border:1px solid #bcd3bc; border-radius:12px;
+    padding:12px 14px; margin:12px 0; display:flex; align-items:center; justify-content:space-between; gap:10px}
+  .mineband .info{font-size:15px}
+  .mineband .info b{font-family:"Fraunces",serif; font-weight:600}
+  @media (prefers-reduced-motion: reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">Satriwithaya · English Program</div>
+    <h1>Book your timeslot</h1>
+    <div class="sub">Pick your name, then tap an open slot.</div>
+  </header>
+
+  <section class="card" id="idcard">
+    <h2>Who are you?</h2>
+    <div class="row2">
+      <div>
+        <label class="fld" for="selClass">Class</label>
+        <select id="selClass"><option value="">Select class…</option></select>
+      </div>
+      <div>
+        <label class="fld" for="selName">Name</label>
+        <select id="selName" disabled><option value="">Select name…</option></select>
+      </div>
+    </div>
+    <p class="note" id="idnote"></p>
+  </section>
+
+  <div class="mineband hidden" id="mineband">
+    <div class="info" id="mineinfo"></div>
+    <button class="btn danger" id="btnCancel" style="width:auto">Cancel</button>
+  </div>
+
+  <section class="card">
+    <div class="toggle">
+      <span class="lbl">Highlight available slots &amp; grey out the rest</span>
+      <label class="sw"><input type="checkbox" id="dimToggle"><span></span></label>
+    </div>
+  </section>
+
+  <div id="schedule"><div class="loading">Loading schedule…</div></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ====== CONFIG ====== */
+const API_URL = "https://script.google.com/macros/s/AKfycbwYyLV6xgQOzi14X_YOoYtRuQc8WlZkGiWfGFMxWhIfi0iLv_tZB_IVD7kfBvRrByR99A/exec";
+/* ==================== */
+
+let STATE = null;          // {roster, schedule, bookings}
+let me = { cls:"", nick:"" };
+const $ = s => document.querySelector(s);
+
+const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+function fmtDate(d){ // "2026-06-22" -> {num, day}
+  const parts = String(d).split("-").map(Number);
+  if(parts.length===3 && !isNaN(parts[0])){
+    const dt = new Date(parts[0], parts[1]-1, parts[2]);
+    return { num: parts[2], day: DAYS[dt.getDay()], full:d };
+  }
+  return { num:d, day:"", full:d };
+}
+
+function toast(msg, isErr){
+  const t = $("#toast"); t.textContent = msg;
+  t.className = "toast show" + (isErr?" err":"");
+  clearTimeout(t._t); t._t = setTimeout(()=>{ t.className = "toast"; }, 2600);
+}
+
+async function api(body){
+  // Normal POST first; fall back to no-cors fire-and-forget on cross-origin redirect failure.
+  try{
+    const r = await fetch(API_URL, {
+      method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify(body)
+    });
+    return await r.json();
+  }catch(e){
+    try{
+      await fetch(API_URL, {method:"POST", mode:"no-cors",
+        headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify(body)});
+    }catch(_){}
+    return { ok:null, fallback:true };
+  }
+}
+
+async function load(){
+  try{
+    const r = await fetch(API_URL);
+    STATE = await r.json();
+  }catch(e){
+    $("#schedule").innerHTML = '<div class="empty">Could not reach the server. Check your connection and refresh.</div>';
+    return;
+  }
+  renderClasses();
+  renderSchedule();
+}
+
+/* ---- identity dropdowns ---- */
+function myBooking(){
+  if(!me.cls || !me.nick || !STATE) return null;
+  return STATE.bookings.find(b => b.cls===me.cls && b.nick===me.nick) || null;
+}
+function renderClasses(){
+  const sel = $("#selClass");
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Select class…</option>';
+  Object.keys(STATE.roster).sort().forEach(c=>{
+    const o=document.createElement("option"); o.value=c; o.textContent="Class "+c; sel.appendChild(o);
+  });
+  if(cur) sel.value=cur;
+}
+function renderNames(){
+  const cls = $("#selClass").value;
+  const sel = $("#selName");
+  sel.innerHTML = '<option value="">Select name…</option>';
+  sel.disabled = !cls;
+  if(!cls){ return; }
+  const booked = new Set(STATE.bookings.filter(b=>b.cls===cls).map(b=>b.nick));
+  (STATE.roster[cls]||[]).forEach(n=>{
+    // Dynamic exclusion: hide students who already booked, EXCEPT the current user.
+    if(booked.has(n) && !(me.cls===cls && me.nick===n)) return;
+    const o=document.createElement("option"); o.value=n; o.textContent=n; sel.appendChild(o);
+  });
+  if(me.cls===cls && me.nick) sel.value=me.nick;
+}
+function updateMineBand(){
+  const b = myBooking();
+  const band = $("#mineband");
+  if(b){
+    const f = fmtDate(b.date);
+    const col = STATE.schedule.columns.find(c=>c.id===b.slotId);
+    const t = col ? `${col.start}–${col.end}` : b.slotId;
+    $("#mineinfo").innerHTML = `Reserved: <b>${f.num} ${f.day}</b> · ${t}`;
+    band.classList.remove("hidden");
+  }else{
+    band.classList.add("hidden");
+  }
+  $("#idnote").textContent = b
+    ? "You have a reservation. Cancel it above to choose a different slot."
+    : (me.nick ? "Tap an open slot below to reserve it." : "");
+}
+
+/* ---- schedule grid ---- */
+function renderSchedule(){
+  const root = $("#schedule");
+  const sched = STATE.schedule;
+  if(!sched.rows || sched.rows.length===0){
+    root.innerHTML = '<div class="empty">No dates have been opened yet. Check back later.</div>';
+    return;
+  }
+  const taken = new Map(); // "date|slot" -> {cls,nick}
+  STATE.bookings.forEach(b=> taken.set(b.date+"|"+b.slotId, b));
+  const mine = myBooking();
+
+  // group columns by their group label, preserving order
+  const groups = [];
+  sched.columns.forEach(c=>{
+    let g = groups[groups.length-1];
+    if(!g || g.label !== (c.group||"")){ g = {label:c.group||"", cols:[]}; groups.push(g); }
+    g.cols.push(c);
+  });
+
+  let html = "";
+  sched.rows.forEach(rw=>{
+    const f = fmtDate(rw.date);
+    html += `<div class="dategroup"><div class="dhead"><span class="dnum">${f.num}</span><span class="dday">${f.day}</span></div>`;
+    groups.forEach(g=>{
+      if(g.label) html += `<div class="grplbl">${g.label}</div>`;
+      html += `<div class="slots">`;
+      g.cols.forEach(c=>{
+        const key = rw.date+"|"+c.id;
+        const bk = taken.get(key);
+        const perDateUnavail = rw.unavailable && rw.unavailable[c.id];
+        const unavailable = c.unavailable || perDateUnavail;
+        let cls="slot", label="", clickable=false;
+        if(unavailable){ cls+=" unavail"; label="Unavailable"; }
+        else if(bk){
+          if(mine && bk.date===mine.date && bk.slotId===mine.slotId){ cls+=" mine"; label="You ✓"; }
+          else{ cls+=" taken"; label="Booked"; }
+        }else{ cls+=" avail"; label="Open · tap to book"; clickable = !!me.nick && !mine; }
+        html += `<button class="${cls}" ${clickable?`data-date="${rw.date}" data-slot="${c.id}"`:"disabled"}>
+          <span class="time">${c.start}–${c.end}</span>
+          <span class="st">${label}</span></button>`;
+      });
+      html += `</div>`;
+    });
+    html += `</div>`;
+  });
+  root.innerHTML = html;
+
+  root.querySelectorAll("button.slot[data-slot]").forEach(btn=>{
+    btn.addEventListener("click", ()=> reserve(btn.dataset.date, btn.dataset.slot));
+  });
+}
+
+async function reserve(date, slotId){
+  if(!me.cls || !me.nick){ toast("Pick your class and name first", true); return; }
+  if(myBooking()){ toast("You already have a slot — cancel it first", true); return; }
+  toast("Booking…");
+  const r = await api({action:"reserve", date, slotId, cls:me.cls, nick:me.nick});
+  if(r && r.ok && r.state){
+    STATE = r.state; afterChange("Reserved ✓");
+  }else if(r && r.fallback){
+    await load(); // confirm against server
+    afterChange(myBooking()?"Reserved ✓":"Submitted");
+  }else{
+    toast(prettyErr(r && r.error), true);
+    await load(); renderAll();
+  }
+}
+async function cancel(){
+  const b = myBooking(); if(!b) return;
+  toast("Cancelling…");
+  const r = await api({action:"cancel", cls:me.cls, nick:me.nick});
+  if(r && r.ok && r.state){ STATE=r.state; afterChange("Cancelled"); }
+  else if(r && r.fallback){ await load(); afterChange("Cancelled"); }
+  else{ toast(prettyErr(r && r.error), true); await load(); renderAll(); }
+}
+function prettyErr(e){
+  const m = {
+    "slot already reserved":"That slot was just taken by someone else.",
+    "you already have a reservation":"You already have a slot booked.",
+    "slot unavailable":"That slot is unavailable.",
+    "identity not in roster":"Your name wasn't recognised. Re-select it.",
+    "busy":"Server is busy — try again."
+  };
+  return m[e] || "Couldn't complete that. Try again.";
+}
+function afterChange(msg){ toast(msg); renderAll(); }
+function renderAll(){ renderNames(); updateMineBand(); renderSchedule(); }
+
+/* ---- events ---- */
+$("#selClass").addEventListener("change", e=>{
+  me.cls = e.target.value; me.nick="";
+  renderNames(); updateMineBand(); renderSchedule();
+});
+$("#selName").addEventListener("change", e=>{
+  me.nick = e.target.value;
+  updateMineBand(); renderSchedule();
+});
+$("#dimToggle").addEventListener("change", e=> document.body.classList.toggle("dim", e.target.checked));
+$("#btnCancel").addEventListener("click", cancel);
+
+load();
+setInterval(async ()=>{ // light refresh so the grid stays current under concurrent use
+  try{ const r=await fetch(API_URL); STATE=await r.json(); renderAll(); }catch(_){}
+}, 12000);
+</script>
+</body>
+</html>
