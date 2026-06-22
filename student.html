@@ -111,6 +111,13 @@
   .hidden{display:none !important}
   .mineband{background:var(--green-bg); border:1px solid #bcd3bc; border-radius:12px;
     padding:12px 14px; margin:12px 0; display:flex; align-items:center; justify-content:space-between; gap:10px}
+  .confirm{display:flex; align-items:center; gap:12px; background:var(--green); color:#f3f8f1;
+    border-radius:12px; padding:14px 16px; margin:14px 0; box-shadow:var(--shadow);
+    animation:pop .25s ease}
+  .confirm .tick{font-size:22px; line-height:1; flex:0 0 auto}
+  .confirm .ctext{font-size:16px}
+  .confirm .ctext b{font-family:"Fraunces",serif; font-weight:600}
+  @keyframes pop{from{opacity:0; transform:translateY(-6px)} to{opacity:1; transform:none}}
   .mineband .info{font-size:15px}
   .mineband .info b{font-family:"Fraunces",serif; font-weight:600}
   @media (prefers-reduced-motion: reduce){*{transition:none !important}}
@@ -123,6 +130,11 @@
     <h1>Book your timeslot</h1>
     <div class="sub">Pick your name, then tap an open slot.</div>
   </header>
+
+  <div class="confirm hidden" id="confirm">
+    <span class="tick">✓</span>
+    <div class="ctext" id="confirmText"></div>
+  </div>
 
   <section class="card" id="idcard">
     <h2>Who are you?</h2>
@@ -291,7 +303,7 @@ function renderSchedule(){
         if(unavailable){ cls+=" unavail"; label="Unavailable"; }
         else if(bk){
           if(mine && bk.date===mine.date && bk.slotId===mine.slotId){ cls+=" mine"; label="You ✓"; }
-          else{ cls+=" taken"; label="Booked"; }
+          else{ cls+=" taken unavail"; label="Unavailable"; }
         }else{ cls+=" avail"; label="Open · tap to book"; clickable = !!me.nick && !mine; }
         html += `<button class="${cls}" ${clickable?`data-date="${rw.date}" data-slot="${c.id}"`:"disabled"}>
           <span class="time">${c.start}–${c.end}</span>
@@ -314,21 +326,32 @@ async function reserve(date, slotId){
   toast("Booking…");
   const r = await api({action:"reserve", date, slotId, cls:me.cls, nick:me.nick});
   if(r && r.ok && r.state){
-    STATE = r.state; afterChange("Reserved ✓");
+    STATE = r.state; afterChange(); confirmBooking();
   }else if(r && r.fallback){
     await load(); // confirm against server
-    afterChange(myBooking()?"Reserved ✓":"Submitted");
+    if(myBooking()){ afterChange(); confirmBooking(); }
+    else { toast("Submitted — refreshing…"); afterChange(); }
   }else{
     toast(prettyErr(r && r.error), true);
     await load(); renderAll();
   }
 }
+function confirmBooking(){
+  const b = myBooking(); if(!b) return;
+  const f = fmtDate(b.date);
+  const col = STATE.schedule.columns.find(c=>c.id===b.slotId);
+  const t = col ? `${col.start}–${col.end}` : b.slotId;
+  $("#confirmText").innerHTML = `Reservation confirmed for <b>${f.num} ${f.day}</b>, ${t}. Your slot is now booked.`;
+  $("#confirm").classList.remove("hidden");
+  // Scroll the display up to the top to show the confirmation.
+  window.scrollTo({ top:0, behavior:"smooth" });
+}
 async function cancel(){
   const b = myBooking(); if(!b) return;
   toast("Cancelling…");
   const r = await api({action:"cancel", cls:me.cls, nick:me.nick});
-  if(r && r.ok && r.state){ STATE=r.state; afterChange("Cancelled"); }
-  else if(r && r.fallback){ await load(); afterChange("Cancelled"); }
+  if(r && r.ok && r.state){ STATE=r.state; toast("Cancelled"); $("#confirm").classList.add("hidden"); afterChange(); }
+  else if(r && r.fallback){ await load(); toast("Cancelled"); $("#confirm").classList.add("hidden"); afterChange(); }
   else{ toast(prettyErr(r && r.error), true); await load(); renderAll(); }
 }
 function prettyErr(e){
@@ -341,7 +364,7 @@ function prettyErr(e){
   };
   return m[e] || "Couldn't complete that. Try again.";
 }
-function afterChange(msg){ toast(msg); renderAll(); }
+function afterChange(){ renderAll(); }
 function renderAll(){ renderNames(); updateMineBand(); renderSchedule(); }
 
 /* ---- events ---- */
@@ -357,9 +380,15 @@ $("#dimToggle").addEventListener("change", e=> document.body.classList.toggle("d
 $("#btnCancel").addEventListener("click", cancel);
 
 load();
-setInterval(async ()=>{ // light refresh so the grid stays current under concurrent use
-  try{ const r=await fetch(API_URL); STATE=await r.json(); renderAll(); }catch(_){}
-}, 12000);
+// Live sync: poll so every open student session sees new reservations quickly.
+setInterval(async ()=>{
+  try{
+    const r=await fetch(API_URL); STATE=await r.json();
+    renderAll();
+    // If my own booking vanished (e.g. teacher removed it), drop the banner.
+    if(!myBooking()) $("#confirm").classList.add("hidden");
+  }catch(_){}
+}, 5000);
 </script>
 </body>
 </html>

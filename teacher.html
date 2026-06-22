@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -178,7 +177,9 @@
   <h2><span class="n">2</span> Timeslots &amp; reservations</h2>
   <div class="panel">
     <div class="tools">
-      <button class="btn ghost sm" id="btnAddCol">+ Add timeslot column</button>
+      <button class="btn ghost sm" id="btnAddPeriod">+ Add period (4 slots)</button>
+      <button class="btn ghost sm" id="btnRemovePeriod">− Remove last period</button>
+      <button class="btn ghost sm" id="btnAddCol">+ Add single timeslot</button>
       <div class="grp">
         <label>Filter class</label>
         <select id="filterClass"><option value="">All classes</option></select>
@@ -226,8 +227,15 @@ function toast(m, err){ const t=$("#toast"); t.textContent=m; t.className="toast
   clearTimeout(t._t); t._t=setTimeout(()=>t.className="toast",2600); }
 function pad(n){ return String(n).padStart(2,"0"); }
 function isoOf(y,m,d){ return `${y}-${pad(m)}-${pad(d)}`; }
-function parseISO(s){ const p=String(s).split("-").map(Number); return new Date(p[0],p[1]-1,p[2]); }
-function dayOf(s){ return DAYS[parseISO(s).getDay()]; }
+function parseISO(s){
+  s=String(s).trim();
+  const m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);   // "YYYY-MM-DD..."
+  if(m) return new Date(+m[1], +m[2]-1, +m[3]);
+  const d=new Date(s);                            // fallback: Date-object string, etc.
+  return isNaN(d) ? null : d;
+}
+function dayOf(s){ const d=parseISO(s); return d?DAYS[d.getDay()]:""; }
+function dateNum(s){ const d=parseISO(s); return d?d.getDate():String(s); }
 function toMin(t){ const [h,m]=t.split(":").map(Number); return h*60+m; }
 function toHHMM(min){ min=((min%1440)+1440)%1440; return pad(Math.floor(min/60))+":"+pad(min%60); }
 function nextId(){ let max=0; SCHED.columns.forEach(c=>{const n=+String(c.id).replace(/\D/g,"");if(n>max)max=n;}); return "ts"+(max+1); }
@@ -313,6 +321,36 @@ function removeColumn(idx){
   if(SCHED.columns.length<=1){ toast("Keep at least one timeslot",true); return; }
   SCHED.columns.splice(idx,1); reflowTimes(); renderGrid(); markDirty();
 }
+
+/* ---- period (4-slot block) management ---- */
+function nextPeriodLabel(){
+  // Highest "Period N" already present, plus one.
+  let max=0;
+  SCHED.columns.forEach(c=>{ const m=/^period\s+(\d+)$/i.exec((c.group||"").trim()); if(m && +m[1]>max) max=+m[1]; });
+  return "Period "+(max+1);
+}
+function addPeriod(){
+  const last = SCHED.columns[SCHED.columns.length-1];
+  let start = last ? last.end : "08:00";
+  const label = nextPeriodLabel();
+  const durations=[15,15,15,5];
+  durations.forEach(d=>{
+    const end=toHHMM(toMin(start)+d);
+    SCHED.columns.push({id:nextId(), group:label, start, end, unavailable:false});
+    start=end;
+  });
+  reflowTimes(); renderGrid(); markDirty();
+  toast(label+" added (4 slots)");
+}
+function removeLastPeriod(){
+  const groups=groupSpans();
+  if(groups.length<=1){ toast("Keep at least one period",true); return; }
+  const lastGrp=groups[groups.length-1];
+  if(SCHED.columns.length - lastGrp.span < 1){ toast("Keep at least one timeslot",true); return; }
+  SCHED.columns.splice(lastGrp.firstIdx, lastGrp.span);
+  reflowTimes(); renderGrid(); markDirty();
+  toast("Removed "+(lastGrp.label||"last group"));
+}
 function reflowTimes(){
   // Adjacency: each slot's start = previous slot's end. Slot 0 keeps its own start.
   for(let i=1;i<SCHED.columns.length;i++){
@@ -393,7 +431,7 @@ function renderGrid(){
   SCHED.rows.forEach(rw=>{
     const f=parseISO(rw.date);
     h+=`<tr><td class="rowctrl"><button class="icb rm" data-act="rowdel" data-d="${rw.date}" title="Remove date">−</button></td>`;
-    h+=`<td><span class="rowdate">${f.getDate()}</span></td><td><span class="rowday">${rw.day||dayOf(rw.date)}</span></td>`;
+    h+=`<td><span class="rowdate">${dateNum(rw.date)}</span></td><td><span class="rowday">${rw.day||dayOf(rw.date)}</span></td>`;
     cols.forEach(c=>{
       const key=rw.date+"|"+c.id, bk=bm.get(key);
       const rowU = rw.unavailable && rw.unavailable[c.id];
@@ -494,8 +532,8 @@ function renderReports(){
   rows.sort((a,b)=> a.date<b.date?-1:a.date>b.date?1:(a.slotId<b.slotId?-1:1));
   $("#bkCount").textContent="("+rows.length+")";
   $("#bkBody").innerHTML = rows.length? rows.map(b=>{
-    const c=colById[b.slotId]; const f=parseISO(b.date);
-    return `<tr><td>${f.getDate()} ${dayOf(b.date)}</td><td>${c?c.start+"–"+c.end:b.slotId}</td><td>${b.cls}</td><td>${b.nick}</td>
+    const c=colById[b.slotId];
+    return `<tr><td>${dateNum(b.date)} ${dayOf(b.date)}</td><td>${c?c.start+"–"+c.end:b.slotId}</td><td>${b.cls}</td><td>${b.nick}</td>
       <td><button class="rmbk" data-d="${b.date}" data-s="${b.slotId}">✕</button></td></tr>`;
   }).join("") : `<tr><td colspan="5" class="muted">No reservations yet.</td></tr>`;
   $("#bkBody").querySelectorAll(".rmbk").forEach(b=> b.onclick=()=>adminUnbook(b.dataset.d,b.dataset.s));
@@ -518,6 +556,8 @@ function renderReports(){
 function renderAll(){ renderCal(); renderGrid(); renderReports(); }
 
 /* ---- wiring ---- */
+$("#btnAddPeriod").onclick=addPeriod;
+$("#btnRemovePeriod").onclick=removeLastPeriod;
 $("#btnAddCol").onclick=addColumn;
 $("#btnSave").onclick=save;
 $("#btnReload").onclick=load;
