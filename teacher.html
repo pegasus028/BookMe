@@ -502,19 +502,42 @@ $("#btnAddRange").onclick=()=>{
 
 /* ---- weekly template ---- */
 $("#btnSaveTpl").onclick=()=>{
-  TEMPLATE = { columns: JSON.parse(JSON.stringify(SCHED.columns)) };
-  $("#btnApplyTpl").disabled=false; toast("Template saved from current columns");
+  // Remember the columns (incl. their column-level locks) AND the per-date
+  // cell locks, keyed by weekday so they reapply to the matching day next week.
+  const locksByDay={};
+  SCHED.rows.forEach(r=>{
+    const wd=r.day||dayOf(r.date);
+    const u=r.unavailable||{};
+    if(Object.keys(u).length) locksByDay[wd]={...(locksByDay[wd]||{}), ...u};
+  });
+  TEMPLATE = {
+    columns: JSON.parse(JSON.stringify(SCHED.columns)),
+    locksByDay: JSON.parse(JSON.stringify(locksByDay))
+  };
+  $("#btnApplyTpl").disabled=false;
+  toast("Template saved (columns + locked slots)");
 };
 $("#btnApplyTpl").onclick=()=>{
   if(!TEMPLATE) return;
-  // Apply template columns, and clone the existing dated rows forward by 7 days.
+  // Apply template columns, then clone each existing dated row forward by 7 days,
+  // reapplying the saved column locks and the per-weekday cell locks.
   SCHED.columns = JSON.parse(JSON.stringify(TEMPLATE.columns));
+  const validIds = new Set(SCHED.columns.map(c=>c.id));
   const existing = SCHED.rows.map(r=>r.date);
   existing.forEach(iso=>{
     const d=parseISO(iso); d.setDate(d.getDate()+7);
-    addDate(isoOf(d.getFullYear(),d.getMonth()+1,d.getDate()));
+    const newIso=isoOf(d.getFullYear(),d.getMonth()+1,d.getDate());
+    if(SCHED.rows.some(r=>r.date===newIso)) return;
+    const wd=dayOf(newIso);
+    const saved=(TEMPLATE.locksByDay&&TEMPLATE.locksByDay[wd])||{};
+    // keep only locks whose slot id still exists in the template columns
+    const locks={};
+    Object.keys(saved).forEach(id=>{ if(validIds.has(id)) locks[id]=true; });
+    SCHED.rows.push({date:newIso, day:wd, unavailable:locks});
   });
-  reflowTimes(); renderAll(); markDirty(); toast("Template applied; next week's dates added");
+  SCHED.rows.sort((a,b)=>a.date<b.date?-1:1);
+  reflowTimes(); renderAll(); markDirty();
+  toast("Template applied; next week added with locks");
 };
 
 /* ---- reports ---- */
