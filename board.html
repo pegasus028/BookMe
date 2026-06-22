@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Booking Board · SWEP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f5efe2; --paper-2:#efe7d6; --ink:#241f17; --ink-soft:#5a5142;
+    --gold:#b08400; --gold-deep:#8a6500; --line:#d9cdb4; --line-2:#cabd9f;
+    --green:#3f7a52; --green-bg:#e3efe1; --green-line:#bcd3bc;
+    --booked-bg:#efe7d6; --grey:#9c947f; --grey-bg:#e7e1d2;
+    --shadow:0 1px 0 #fff8 inset, 0 10px 30px -20px #3a2f1c80;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(120% 90% at 50% -8%, #fbf6ea, transparent 55%), var(--paper);
+    color:var(--ink); font-family:"Newsreader",Georgia,serif; font-size:16px; line-height:1.45;
+    padding:0 0 60px; -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:0 18px}
+  header.top{padding:26px 0 14px; text-align:center}
+  .eyebrow{font-family:"Space Mono",monospace; font-size:11px; letter-spacing:.22em;
+    text-transform:uppercase; color:var(--gold-deep)}
+  h1{font-family:"Fraunces",serif; font-weight:500; font-size:32px; margin:.16em 0 .12em; line-height:1.05}
+  .sub{color:var(--ink-soft); font-size:15px}
+  .meta{font-family:"Space Mono",monospace; font-size:11px; color:var(--ink-soft); margin-top:8px}
+
+  .panel{background:var(--paper-2); border:1px solid var(--line); border-radius:14px;
+    padding:6px; box-shadow:var(--shadow); margin-top:14px; overflow:hidden}
+  .scroll{overflow:auto; border-radius:10px; -webkit-overflow-scrolling:touch}
+
+  table.board{width:100%; border-collapse:separate; border-spacing:0; font-size:15px}
+  table.board th, table.board td{padding:11px 14px; text-align:left; border-bottom:1px solid var(--line)}
+  table.board thead th{
+    position:sticky; top:0; z-index:3; background:var(--ink); color:var(--paper);
+    font-family:"Space Mono",monospace; font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+    border-bottom:none; white-space:nowrap;
+  }
+  table.board thead th:first-child{border-top-left-radius:8px}
+  table.board thead th:last-child{border-top-right-radius:8px}
+
+  /* date-band rows */
+  tr.dateband td{
+    background:var(--paper); border-bottom:1px solid var(--line-2);
+    font-family:"Fraunces",serif; font-weight:600; font-size:17px; padding:12px 14px;
+  }
+  tr.dateband .dday{font-family:"Space Mono",monospace; font-size:11px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--gold-deep); font-weight:400; margin-left:8px}
+
+  td.time{font-family:"Space Mono",monospace; font-size:14px; white-space:nowrap; color:var(--ink)}
+  td.grp{font-family:"Space Mono",monospace; font-size:11px; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--ink-soft); white-space:nowrap}
+  td.status{white-space:nowrap}
+  .tag{display:inline-block; font-family:"Space Mono",monospace; font-size:11px; letter-spacing:.06em;
+    text-transform:uppercase; padding:2px 9px; border-radius:99px; border:1px solid transparent}
+  .name{font-family:"Fraunces",serif; font-weight:500; font-size:16px}
+  .name .cls{font-family:"Newsreader",serif; font-weight:400; color:var(--ink-soft); font-size:14px}
+
+  /* conditional row styling */
+  tr.avail td{background:var(--green-bg)}
+  tr.avail .tag{background:#fff; color:var(--green); border-color:var(--green-line)}
+  tr.booked td{background:var(--booked-bg)}
+  tr.booked .tag{background:var(--paper); color:var(--ink-soft); border-color:var(--line-2)}
+  tr.unavail td{background:var(--grey-bg); color:var(--grey)}
+  tr.unavail .tag{background:transparent; color:var(--grey); border-color:var(--line-2)}
+  tr.slotrow:hover td{filter:brightness(.99)}
+
+  .loading{text-align:center; color:var(--ink-soft); padding:48px 0; font-size:16px}
+  .spinner{width:22px; height:22px; border:2px solid var(--line-2); border-top-color:var(--gold);
+    border-radius:50%; display:inline-block; vertical-align:-5px; margin-right:10px; animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .empty{text-align:center; color:var(--ink-soft); font-style:italic; padding:40px 0}
+  .err{text-align:center; color:#9c4a36; padding:40px 0}
+  @media (prefers-reduced-motion: reduce){.spinner{animation:none}}
+
+  @media(max-width:520px){
+    h1{font-size:26px}
+    table.board th, table.board td{padding:9px 10px}
+    td.grp{display:none} thead th.grp{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">Satriwithaya · English Program</div>
+    <h1>Booking Board</h1>
+    <div class="sub">Live schedule — find your name or an open slot.</div>
+    <div class="meta" id="meta"></div>
+  </header>
+
+  <div class="panel">
+    <div class="scroll">
+      <table class="board" id="board" aria-live="polite">
+        <tbody id="tbody">
+          <tr><td><div class="loading"><span class="spinner"></span>Loading the schedule…</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ====== CONFIG ====== */
+const API_URL = "https://script.google.com/macros/s/AKfycbwYyLV6xgQOzi14X_YOoYtRuQc8WlZkGiWfGFMxWhIfi0iLv_tZB_IVD7kfBvRrByR99A/exec";
+/* ==================== */
+
+const $ = s => document.querySelector(s);
+const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+function dateLabel(iso, day){
+  const p = String(iso).split("-").map(Number);
+  if(p.length===3 && !isNaN(p[0])){
+    const dt = new Date(p[0], p[1]-1, p[2]);
+    const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const d = day || DAYS[dt.getDay()];
+    return `${p[2]} ${months[p[1]-1]} ${p[0]} <span class="dday">${d}</span>`;
+  }
+  return String(iso);
+}
+
+async function load(){
+  let data;
+  try{
+    const r = await fetch(API_URL + "?action=board");
+    data = await r.json();
+  }catch(e){
+    $("#tbody").innerHTML = `<tr><td><div class="err">Couldn't reach the schedule. Please refresh in a moment.</div></td></tr>`;
+    return;
+  }
+  render(data);
+}
+
+function render(data){
+  const rows = (data && data.rows) || [];
+  const tbody = $("#tbody");
+  if(rows.length===0){
+    document.querySelector("table.board").innerHTML =
+      `<tbody><tr><td><div class="empty">No dates have been published yet. Check back soon.</div></td></tr></tbody>`;
+    return;
+  }
+
+  // header
+  let html = `<thead><tr>
+      <th>Time</th><th class="grp">Period</th><th>Status / Student</th>
+    </tr></thead><tbody>`;
+
+  let lastDate = null;
+  rows.forEach(row=>{
+    if(row.date !== lastDate){
+      html += `<tr class="dateband"><td colspan="3">${dateLabel(row.date, row.day)}</td></tr>`;
+      lastDate = row.date;
+    }
+    let cls="slotrow", statusCell="";
+    if(row.status==="Available"){
+      cls+=" avail";
+      statusCell = `<span class="tag">Available</span>`;
+    }else if(row.status==="Booked"){
+      cls+=" booked";
+      statusCell = `<span class="name">${esc(row.nick)} <span class="cls">(${esc(row.cls)})</span></span>`;
+    }else{ // Unavailable
+      cls+=" unavail";
+      statusCell = `<span class="tag">Unavailable</span>`;
+    }
+    html += `<tr class="${cls}">
+        <td class="time">${esc(row.time)}</td>
+        <td class="grp">${esc(row.group)}</td>
+        <td class="status">${statusCell}</td>
+      </tr>`;
+  });
+  html += `</tbody>`;
+  document.querySelector("table.board").innerHTML = html;
+
+  if(data.generated){
+    const t = new Date(data.generated);
+    $("#meta").textContent = "Updated " + t.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+  }
+}
+
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+load();
+// Live board: refresh so students see bookings appear without reloading.
+setInterval(load, 5000);
+</script>
+</body>
+</html>

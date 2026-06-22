@@ -43,11 +43,6 @@
     background-repeat:no-repeat; background-position:right 12px center}
   .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
   @media(max-width:430px){.row2{grid-template-columns:1fr}}
-  input[type=email]{width:100%; padding:13px 12px; border:1px solid var(--line); border-radius:10px;
-    background:var(--paper); color:var(--ink); -webkit-appearance:none; appearance:none}
-  input[type=email]:focus{outline:none; border-color:var(--gold)}
-  input[type=email].bad{border-color:var(--bad); background:#f7ede9}
-  .emailerr{font-size:13px; color:var(--bad); margin:6px 2px 0}
 
   .btn{display:inline-flex; align-items:center; justify-content:center; gap:8px;
     padding:13px 16px; border:1px solid var(--gold-deep); border-radius:10px; cursor:pointer;
@@ -153,12 +148,6 @@
         <select id="selName" disabled><option value="">Select name…</option></select>
       </div>
     </div>
-    <div style="margin-top:12px">
-      <label class="fld" for="swEmail">SW email address</label>
-      <input type="email" id="swEmail" inputmode="email" autocomplete="email"
-             placeholder="you@satriwit.ac.th" required>
-      <p class="emailerr hidden" id="emailErr">Enter a valid email address.</p>
-    </div>
     <p class="note" id="idnote"></p>
   </section>
 
@@ -185,7 +174,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwYyLV6xgQOzi14X_YOoYtR
 /* ==================== */
 
 let STATE = null;          // {roster, schedule, bookings}
-let me = { cls:"", nick:"", email:"" };
+let me = { cls:"", nick:"" };
 const $ = s => document.querySelector(s);
 
 const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
@@ -331,23 +320,11 @@ function renderSchedule(){
   });
 }
 
-function validEmail(s){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s).trim()); }
-function checkEmail(){
-  const v=$("#swEmail").value.trim();
-  const okv=validEmail(v);
-  $("#swEmail").classList.toggle("bad", v.length>0 && !okv);
-  $("#emailErr").classList.toggle("hidden", okv || v.length===0);
-  return okv;
-}
 async function reserve(date, slotId){
   if(!me.cls || !me.nick){ toast("Pick your class and name first", true); return; }
-  me.email = $("#swEmail").value.trim();
-  if(!me.email){ $("#emailErr").classList.remove("hidden"); $("#swEmail").classList.add("bad");
-    $("#swEmail").focus(); toast("Enter your SW email first", true); return; }
-  if(!validEmail(me.email)){ checkEmail(); $("#swEmail").focus(); toast("That email looks invalid", true); return; }
   if(myBooking()){ toast("You already have a slot — cancel it first", true); return; }
   toast("Booking…");
-  const r = await api({action:"reserve", date, slotId, cls:me.cls, nick:me.nick, swEmail:me.email});
+  const r = await api({action:"reserve", date, slotId, cls:me.cls, nick:me.nick});
   if(r && r.ok && r.state){
     STATE = r.state; afterChange(); confirmBooking();
   }else if(r && r.fallback){
@@ -364,7 +341,7 @@ function confirmBooking(){
   const f = fmtDate(b.date);
   const col = STATE.schedule.columns.find(c=>c.id===b.slotId);
   const t = col ? `${col.start}–${col.end}` : b.slotId;
-  $("#confirmText").innerHTML = `Reservation confirmed for <b>${f.num} ${f.day}</b>, ${t}. A confirmation email has been sent to ${me.email}.`;
+  $("#confirmText").innerHTML = `Reservation confirmed for <b>${f.num} ${f.day}</b>, ${t}. Your slot is now booked.`;
   $("#confirm").classList.remove("hidden");
   // Scroll the display up to the top to show the confirmation.
   window.scrollTo({ top:0, behavior:"smooth" });
@@ -383,8 +360,6 @@ function prettyErr(e){
     "you already have a reservation":"You already have a slot booked.",
     "slot unavailable":"That slot is unavailable.",
     "identity not in roster":"Your name wasn't recognised. Re-select it.",
-    "missing email":"Enter your SW email address first.",
-    "invalid email":"That email address looks invalid.",
     "busy":"Server is busy — try again."
   };
   return m[e] || "Couldn't complete that. Try again.";
@@ -401,8 +376,6 @@ $("#selName").addEventListener("change", e=>{
   me.nick = e.target.value;
   updateMineBand(); renderSchedule();
 });
-$("#swEmail").addEventListener("input", ()=>{ me.email=$("#swEmail").value.trim(); checkEmail(); });
-$("#swEmail").addEventListener("blur", checkEmail);
 $("#dimToggle").addEventListener("change", e=> document.body.classList.toggle("dim", e.target.checked));
 $("#btnCancel").addEventListener("click", cancel);
 
