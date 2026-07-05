@@ -24,8 +24,7 @@
   }
   .wrap{max-width:920px; margin:0 auto; padding:0 18px}
   header.top{padding:26px 0 14px; text-align:center}
-  .eyebrow{font-family:"Space Mono",monospace; font-size:11px; letter-spacing:.22em;
-    text-transform:uppercase; color:var(--gold-deep)}
+  .eyebrow{font-family:"Space Mono",monospace; font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--gold-deep)}
   h1{font-family:"Fraunces",serif; font-weight:500; font-size:32px; margin:.16em 0 .12em; line-height:1.05}
   .sub{color:var(--ink-soft); font-size:15px}
   .meta{font-family:"Space Mono",monospace; font-size:11px; color:var(--ink-soft); margin-top:8px}
@@ -44,35 +43,24 @@
   table.board thead th:first-child{border-top-left-radius:8px}
   table.board thead th:last-child{border-top-right-radius:8px}
 
-  /* date-band rows */
-  tr.dateband td{
-    background:var(--paper); border-bottom:1px solid var(--line-2);
-    font-family:"Fraunces",serif; font-weight:600; font-size:17px; padding:12px 14px;
-  }
-  tr.dateband .dday{font-family:"Space Mono",monospace; font-size:11px; letter-spacing:.14em;
-    text-transform:uppercase; color:var(--gold-deep); font-weight:400; margin-left:8px}
+  /* Accordion styling */
+  .toggle-btn { font-family: "Space Mono", monospace; font-weight: bold; margin-right: 8px; color: var(--gold-deep); cursor: pointer; display: inline-block; width: 16px; text-align: center;}
+  tr.weekband td { background: var(--line-2); color: var(--ink); font-family: "Fraunces", serif; font-weight: 600; font-size: 18px; padding: 14px; cursor: pointer; border-bottom: 1px solid var(--ink-soft); }
+  tr.dateband td{ background:var(--paper); border-bottom:1px solid var(--line-2); font-family:"Fraunces",serif; font-weight:600; font-size:17px; padding:12px 14px; cursor: pointer; }
+  tr.dateband .dday{font-family:"Space Mono",monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--gold-deep); font-weight:400; margin-left:8px}
 
   td.time{font-family:"Space Mono",monospace; font-size:14px; white-space:nowrap; color:var(--ink)}
-  td.grp{font-family:"Space Mono",monospace; font-size:11px; letter-spacing:.06em;
-    text-transform:uppercase; color:var(--ink-soft); white-space:nowrap}
+  td.grp{font-family:"Space Mono",monospace; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); white-space:nowrap}
   td.status{white-space:nowrap}
-  .tag{display:inline-block; font-family:"Space Mono",monospace; font-size:11px; letter-spacing:.06em;
-    text-transform:uppercase; padding:2px 9px; border-radius:99px; border:1px solid transparent}
   .name{font-family:"Fraunces",serif; font-weight:500; font-size:16px}
   .name .cls{font-family:"Newsreader",serif; font-weight:400; color:var(--ink-soft); font-size:14px}
-
-  /* conditional row styling */
-  tr.avail td{background:var(--green-bg)}
-  tr.avail .tag{background:#fff; color:var(--green); border-color:var(--green-line)}
   tr.booked td{background:var(--booked-bg)}
-  tr.booked .tag{background:var(--paper); color:var(--ink-soft); border-color:var(--line-2)}
-  tr.unavail td{background:var(--grey-bg); color:var(--grey)}
-  tr.unavail .tag{background:transparent; color:var(--grey); border-color:var(--line-2)}
   tr.slotrow:hover td{filter:brightness(.99)}
+  
+  .hidden { display: none !important; }
 
   .loading{text-align:center; color:var(--ink-soft); padding:48px 0; font-size:16px}
-  .spinner{width:22px; height:22px; border:2px solid var(--line-2); border-top-color:var(--gold);
-    border-radius:50%; display:inline-block; vertical-align:-5px; margin-right:10px; animation:spin .8s linear infinite}
+  .spinner{width:22px; height:22px; border:2px solid var(--line-2); border-top-color:var(--gold); border-radius:50%; display:inline-block; vertical-align:-5px; margin-right:10px; animation:spin .8s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
   .empty{text-align:center; color:var(--ink-soft); font-style:italic; padding:40px 0}
   .err{text-align:center; color:#9c4a36; padding:40px 0}
@@ -81,7 +69,6 @@
   @media(max-width:520px){
     h1{font-size:26px}
     table.board th, table.board td{padding:9px 10px}
-    td.grp{display:none} thead th.grp{display:none}
   }
 </style>
 </head>
@@ -90,7 +77,7 @@
   <header class="top">
     <div class="eyebrow">Satriwithaya · English Program</div>
     <h1>Booking Board</h1>
-    <div class="sub">Live schedule — find your name or an open slot.</div>
+    <div class="sub">Live schedule — Reserved slots only.</div>
     <div class="meta" id="meta"></div>
   </header>
 
@@ -107,11 +94,32 @@
 
 <script>
 /* ====== CONFIG ====== */
-const API_URL = "https://script.google.com/macros/s/AKfycbwYyLV6xgQOzi14X_YOoYtRuQc8WlZkGiWfGFMxWhIfi0iLv_tZB_IVD7kfBvRrByR99A/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwoLn0lRT8dxFrFtWe40g29CkrOsW0ZKrN6qL79bjX-RHj-hWGEvRIINXZ63PJhpXkqKQ/exec";
 /* ==================== */
 
 const $ = s => document.querySelector(s);
 const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+// Centralized state tracking for the accordions to preserve status during interval refreshes
+let lastData = null;
+const expandedState = new Set();
+
+function toggleGroup(id) {
+  if (expandedState.has(id)) { expandedState.delete(id); }
+  else { expandedState.add(id); }
+  if (lastData) render(lastData);
+}
+
+// Groups dates by the Monday of their respective week
+function getWeekStartLabel(iso) {
+  const p = String(iso).split("-").map(Number);
+  const dt = new Date(p[0], p[1]-1, p[2]);
+  const day = dt.getDay();
+  const diff = dt.getDate() - day + (day === 0 ? -6 : 1);
+  const mon = new Date(dt.setDate(diff));
+  const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return `Week of ${mon.getDate()} ${months[mon.getMonth()]} ${mon.getFullYear()}`;
+}
 
 function dateLabel(iso, day){
   const p = String(iso).split("-").map(Number);
@@ -125,49 +133,70 @@ function dateLabel(iso, day){
 }
 
 async function load(){
-  let data;
   try{
     const r = await fetch(API_URL + "?action=board");
-    data = await r.json();
+    lastData = await r.json();
   }catch(e){
     $("#tbody").innerHTML = `<tr><td><div class="err">Couldn't reach the schedule. Please refresh in a moment.</div></td></tr>`;
     return;
   }
-  render(data);
+  render(lastData);
 }
 
 function render(data){
   const rows = (data && data.rows) || [];
-  const tbody = $("#tbody");
-  if(rows.length===0){
+  const bookedRows = rows.filter(r => r.status === "Booked");
+  
+  if(bookedRows.length===0){
     document.querySelector("table.board").innerHTML =
-      `<tbody><tr><td><div class="empty">No dates have been published yet. Check back soon.</div></td></tr></tbody>`;
+      `<tbody><tr><td><div class="empty">No slots have been reserved yet.</div></td></tr></tbody>`;
     return;
   }
 
-  // header
   let html = `<thead><tr>
-      <th>Time</th><th class="grp">Period</th><th>Status / Student</th>
+      <th>Time</th><th class="grp">Period</th><th>Student</th>
     </tr></thead><tbody>`;
 
+  let lastWeek = null;
   let lastDate = null;
-  rows.forEach(row=>{
+  let weekIdx = 0;
+  let dayIdx = 0;
+
+  // Render logic completely respects the local UI set 'expandedState' 
+  // so things don't constantly jump around every 5 seconds.
+  bookedRows.forEach(row=>{
+    const currentWeek = getWeekStartLabel(row.date);
+    
+    if (currentWeek !== lastWeek) {
+      weekIdx++;
+      let wId = "w" + weekIdx;
+      let wOpen = expandedState.has(wId);
+      html += `<tr class="weekband" onclick="toggleGroup('${wId}')">
+                 <td colspan="3"><span class="toggle-btn">${wOpen ? '-' : '+'}</span>${currentWeek}</td>
+               </tr>`;
+      lastWeek = currentWeek;
+    }
+    
     if(row.date !== lastDate){
-      html += `<tr class="dateband"><td colspan="3">${dateLabel(row.date, row.day)}</td></tr>`;
+      dayIdx++;
+      let wId = "w" + weekIdx;
+      let wOpen = expandedState.has(wId);
+      let dId = "d" + dayIdx;
+      let dOpen = expandedState.has(dId);
+
+      html += `<tr class="dateband ${wOpen ? '' : 'hidden'}" onclick="toggleGroup('${dId}')">
+                 <td colspan="3"><span class="toggle-btn">${dOpen ? '-' : '+'}</span>${dateLabel(row.date, row.day)}</td>
+               </tr>`;
       lastDate = row.date;
     }
-    let cls="slotrow", statusCell="";
-    if(row.status==="Available"){
-      cls+=" avail";
-      statusCell = `<span class="tag">Available</span>`;
-    }else if(row.status==="Booked"){
-      cls+=" booked";
-      statusCell = `<span class="name">${esc(row.nick)} <span class="cls">(${esc(row.cls)})</span></span>`;
-    }else{ // Unavailable
-      cls+=" unavail";
-      statusCell = `<span class="tag">Unavailable</span>`;
-    }
-    html += `<tr class="${cls}">
+    
+    const statusCell = `<span class="name">${esc(row.nick)} <span class="cls">(${esc(row.cls)})</span></span>`;
+    
+    let wId = "w" + weekIdx;
+    let dId = "d" + dayIdx;
+    let showSlots = expandedState.has(wId) && expandedState.has(dId);
+
+    html += `<tr class="slotrow booked ${showSlots ? '' : 'hidden'}">
         <td class="time">${esc(row.time)}</td>
         <td class="grp">${esc(row.group)}</td>
         <td class="status">${statusCell}</td>
@@ -185,7 +214,6 @@ function render(data){
 function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
 load();
-// Live board: refresh so students see bookings appear without reloading.
 setInterval(load, 5000);
 </script>
 </body>

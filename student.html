@@ -17,103 +17,66 @@
   *{box-sizing:border-box}
   html,body{margin:0}
   body{
-    background:
-      radial-gradient(120% 100% at 50% -10%, #fbf6ea, transparent 60%),
-      var(--paper);
+    background: radial-gradient(120% 100% at 50% -10%, #fbf6ea, transparent 60%), var(--paper);
     color:var(--ink); font-family:"Newsreader",Georgia,serif;
     font-size:17px; line-height:1.5; padding:env(safe-area-inset-top) 0 40px;
     -webkit-text-size-adjust:100%;
   }
   .wrap{max-width:680px; margin:0 auto; padding:0 16px}
   header.top{padding:22px 0 14px; text-align:center}
-  .eyebrow{font-family:"Space Mono",monospace; font-size:11px; letter-spacing:.22em;
-    text-transform:uppercase; color:var(--gold-deep)}
+  .eyebrow{font-family:"Space Mono",monospace; font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--gold-deep)}
   h1{font-family:"Fraunces",serif; font-weight:500; font-size:30px; margin:.18em 0 .1em; line-height:1.05}
   .sub{color:var(--ink-soft); font-size:15px}
 
-  .card{background:var(--paper-2); border:1px solid var(--line); border-radius:14px;
-    padding:16px; margin:14px 0; box-shadow:var(--shadow)}
+  .card{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:16px; margin:14px 0; box-shadow:var(--shadow)}
   .card h2{font-family:"Fraunces",serif; font-weight:500; font-size:18px; margin:0 0 10px}
-  label.fld{display:block; font-family:"Space Mono",monospace; font-size:11px;
-    letter-spacing:.12em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 6px}
+  label.fld{display:block; font-family:"Space Mono",monospace; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 6px}
   select, .btn, input{font-family:"Newsreader",serif; font-size:17px}
-  select{width:100%; padding:13px 12px; border:1px solid var(--line); border-radius:10px;
-    background:var(--paper); color:var(--ink); -webkit-appearance:none; appearance:none;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238a6500' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat:no-repeat; background-position:right 12px center}
+  select{width:100%; padding:13px 12px; border:1px solid var(--line); border-radius:10px; background:var(--paper); color:var(--ink); -webkit-appearance:none; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238a6500' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center}
   .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
   @media(max-width:430px){.row2{grid-template-columns:1fr}}
 
-  .btn{display:inline-flex; align-items:center; justify-content:center; gap:8px;
-    padding:13px 16px; border:1px solid var(--gold-deep); border-radius:10px; cursor:pointer;
-    background:var(--gold); color:#fff7e6; -webkit-text-fill-color:#fff7e6;
-    -webkit-appearance:none; appearance:none; font-weight:500; width:100%}
+  .btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:13px 16px; border:1px solid var(--gold-deep); border-radius:10px; cursor:pointer; background:var(--gold); color:#fff7e6; -webkit-text-fill-color:#fff7e6; -webkit-appearance:none; appearance:none; font-weight:500; width:100%}
   .btn:active{transform:translateY(1px)}
   .btn[disabled]{opacity:.45; cursor:not-allowed}
-  .btn.ghost{background:transparent; color:var(--ink); -webkit-text-fill-color:var(--ink);
-    border-color:var(--line)}
-  .btn.danger{background:transparent; color:var(--bad); -webkit-text-fill-color:var(--bad);
-    border-color:#c9a99a}
+  .btn.danger{background:transparent; color:var(--bad); -webkit-text-fill-color:var(--bad); border-color:#c9a99a}
 
-  .toggle{display:flex; align-items:center; gap:10px; justify-content:space-between;
-    background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:10px 12px}
-  .toggle .lbl{font-size:15px; color:var(--ink-soft)}
-  .sw{position:relative; width:46px; height:26px; flex:0 0 auto}
-  .sw input{position:absolute; opacity:0; width:100%; height:100%; margin:0}
-  .sw span{position:absolute; inset:0; background:var(--grey-bg); border:1px solid var(--line);
-    border-radius:99px; transition:.18s}
-  .sw span:before{content:""; position:absolute; width:20px; height:20px; left:3px; top:2px;
-    background:#fff; border-radius:50%; box-shadow:0 1px 3px #0003; transition:.18s}
-  .sw input:checked + span{background:var(--gold)}
-  .sw input:checked + span:before{transform:translateX(20px)}
-
-  /* schedule grid */
-  .dategroup{margin-top:18px}
-  .dhead{display:flex; align-items:baseline; gap:10px; margin:0 2px 8px}
-  .dnum{font-family:"Fraunces",serif; font-weight:600; font-size:22px}
-  .dday{font-family:"Space Mono",monospace; font-size:12px; letter-spacing:.14em;
-    text-transform:uppercase; color:var(--gold-deep)}
+  /* schedule grid and Accordion */
+  .weekgroup { margin-top: 24px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper-2); overflow: hidden; box-shadow: var(--shadow); }
+  .weekhead { display: flex; align-items: baseline; gap: 10px; background: var(--ink); color: var(--paper); padding: 12px 16px; font-family: "Fraunces", serif; font-size: 18px; font-weight: 500; cursor: pointer; }
+  .toggle-btn { font-family: "Space Mono", monospace; font-size: 16px; color: var(--gold); margin-right: 4px; display: inline-block; width: 14px; text-align: center;}
+  
+  .week-content { padding: 0 12px 12px 12px; }
+  
+  .dategroup{ margin-top:18px; border-bottom: 1px dashed var(--line); padding-bottom: 14px; }
+  .dategroup:last-child { border-bottom: none; padding-bottom: 0; }
+  .dhead{display:flex; align-items:baseline; gap:10px; margin:0 2px 10px; cursor: pointer;}
+  .dnum{font-family:"Fraunces",serif; font-weight:600; font-size:22px; color: var(--ink);}
+  .dday{font-family:"Space Mono",monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--gold-deep)}
+  
   .grp{margin:0 0 6px}
-  .grplbl{font-family:"Space Mono",monospace; font-size:11px; letter-spacing:.12em;
-    text-transform:uppercase; color:var(--ink-soft); margin:8px 2px 5px}
+  .grplbl{font-family:"Space Mono",monospace; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-soft); margin:8px 2px 5px}
   .slots{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px}
-  .slot{border:1px solid var(--line); border-radius:11px; padding:11px 12px; background:var(--paper);
-    text-align:left; cursor:pointer; -webkit-appearance:none; appearance:none; color:var(--ink);
-    -webkit-text-fill-color:var(--ink); transition:.12s; min-height:64px}
+  .slot{border:1px solid var(--line); border-radius:11px; padding:11px 12px; background:var(--paper); text-align:left; cursor:pointer; -webkit-appearance:none; appearance:none; color:var(--ink); -webkit-text-fill-color:var(--ink); transition:.12s; min-height:64px}
   .slot:active{transform:translateY(1px)}
   .slot .time{font-family:"Space Mono",monospace; font-size:13px; color:var(--ink-soft)}
   .slot .st{display:block; margin-top:4px; font-size:15px}
   .slot.avail{border-color:#cdbf9d}
   .slot.avail:hover{border-color:var(--gold); background:#fbf6ea}
-  .slot.taken{background:var(--paper-2); cursor:default; opacity:.92}
-  .slot.taken .st{color:var(--ink-soft)}
   .slot.mine{background:var(--green-bg); border-color:#bcd3bc}
   .slot.mine .st{color:var(--green); font-weight:500}
-  .slot.unavail{background:var(--grey-bg); border-color:var(--line); cursor:default; color:var(--grey);
-    -webkit-text-fill-color:var(--grey)}
-  .slot.unavail .time{color:var(--grey)}
-  /* dim mode: grey out unavailable, lift available */
-  body.dim .slot.unavail{opacity:.35}
-  body.dim .slot.taken{opacity:.5}
-  body.dim .slot.avail{box-shadow:0 0 0 2px #b0840033}
+  
+  .hidden { display: none !important; }
 
-  .pill{display:inline-block; font-family:"Space Mono",monospace; font-size:11px;
-    letter-spacing:.1em; text-transform:uppercase; padding:2px 8px; border-radius:99px;
-    background:var(--green-bg); color:var(--green); border:1px solid #bcd3bc}
   .note{font-size:14px; color:var(--ink-soft); margin:8px 2px 0}
-  .toast{position:fixed; left:50%; bottom:22px; transform:translateX(-50%) translateY(20px);
-    background:var(--ink); color:var(--paper); padding:11px 16px; border-radius:10px;
-    font-size:15px; opacity:0; transition:.22s; pointer-events:none; z-index:50; max-width:90vw; text-align:center}
+  .toast{position:fixed; left:50%; bottom:22px; transform:translateX(-50%) translateY(20px); background:var(--ink); color:var(--paper); padding:11px 16px; border-radius:10px; font-size:15px; opacity:0; transition:.22s; pointer-events:none; z-index:50; max-width:90vw; text-align:center}
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
   .toast.err{background:var(--bad)}
-  .empty{color:var(--ink-soft); font-style:italic; padding:18px 2px}
+  .empty{color:var(--ink-soft); font-style:italic; padding:18px 2px; text-align:center;}
   .loading{text-align:center; color:var(--ink-soft); padding:30px}
-  .hidden{display:none !important}
-  .mineband{background:var(--green-bg); border:1px solid #bcd3bc; border-radius:12px;
-    padding:12px 14px; margin:12px 0; display:flex; align-items:center; justify-content:space-between; gap:10px}
-  .confirm{display:flex; align-items:center; gap:12px; background:var(--green); color:#f3f8f1;
-    border-radius:12px; padding:14px 16px; margin:14px 0; box-shadow:var(--shadow);
-    animation:pop .25s ease}
+  
+  .mineband{background:var(--green-bg); border:1px solid #bcd3bc; border-radius:12px; padding:12px 14px; margin:12px 0; display:flex; align-items:center; justify-content:space-between; gap:10px}
+  .confirm{display:flex; align-items:center; gap:12px; background:var(--green); color:#f3f8f1; border-radius:12px; padding:14px 16px; margin:14px 0; box-shadow:var(--shadow); animation:pop .25s ease}
   .confirm .tick{font-size:22px; line-height:1; flex:0 0 auto}
   .confirm .ctext{font-size:16px}
   .confirm .ctext b{font-family:"Fraunces",serif; font-weight:600}
@@ -156,13 +119,6 @@
     <button class="btn danger" id="btnCancel" style="width:auto">Cancel</button>
   </div>
 
-  <section class="card">
-    <div class="toggle">
-      <span class="lbl">Highlight available slots &amp; grey out the rest</span>
-      <label class="sw"><input type="checkbox" id="dimToggle"><span></span></label>
-    </div>
-  </section>
-
   <div id="schedule"><div class="loading">Loading schedule…</div></div>
 </div>
 
@@ -170,21 +126,41 @@
 
 <script>
 /* ====== CONFIG ====== */
-const API_URL = "https://script.google.com/macros/s/AKfycbwYyLV6xgQOzi14X_YOoYtRuQc8WlZkGiWfGFMxWhIfi0iLv_tZB_IVD7kfBvRrByR99A/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwoLn0lRT8dxFrFtWe40g29CkrOsW0ZKrN6qL79bjX-RHj-hWGEvRIINXZ63PJhpXkqKQ/exec";
 /* ==================== */
 
-let STATE = null;          // {roster, schedule, bookings}
+let STATE = null;
 let me = { cls:"", nick:"" };
 const $ = s => document.querySelector(s);
 
 const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-function fmtDate(d){ // "2026-06-22" -> {num, day}
+function fmtDate(d){
   const parts = String(d).split("-").map(Number);
   if(parts.length===3 && !isNaN(parts[0])){
     const dt = new Date(parts[0], parts[1]-1, parts[2]);
     return { num: parts[2], day: DAYS[dt.getDay()], full:d };
   }
   return { num:d, day:"", full:d };
+}
+
+// Groups dates by the Monday of their respective week
+function getWeekStartLabel(iso) {
+  const p = String(iso).split("-").map(Number);
+  const dt = new Date(p[0], p[1]-1, p[2]);
+  const day = dt.getDay();
+  const diff = dt.getDate() - day + (day === 0 ? -6 : 1);
+  const mon = new Date(dt.setDate(diff));
+  const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return `Week of ${mon.getDate()} ${months[mon.getMonth()]}`;
+}
+
+// Global Set to track which accordions the user has expanded. Preserved across polls.
+const expandedState = new Set();
+
+function toggleEl(id) {
+  if(expandedState.has(id)) { expandedState.delete(id); } 
+  else { expandedState.add(id); }
+  renderSchedule();
 }
 
 function toast(msg, isErr){
@@ -194,7 +170,6 @@ function toast(msg, isErr){
 }
 
 async function api(body){
-  // Normal POST first; fall back to no-cors fire-and-forget on cross-origin redirect failure.
   try{
     const r = await fetch(API_URL, {
       method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"},
@@ -222,11 +197,11 @@ async function load(){
   renderSchedule();
 }
 
-/* ---- identity dropdowns ---- */
 function myBooking(){
   if(!me.cls || !me.nick || !STATE) return null;
   return STATE.bookings.find(b => b.cls===me.cls && b.nick===me.nick) || null;
 }
+
 function renderClasses(){
   const sel = $("#selClass");
   const cur = sel.value;
@@ -236,6 +211,7 @@ function renderClasses(){
   });
   if(cur) sel.value=cur;
 }
+
 function renderNames(){
   const cls = $("#selClass").value;
   const sel = $("#selName");
@@ -244,12 +220,12 @@ function renderNames(){
   if(!cls){ return; }
   const booked = new Set(STATE.bookings.filter(b=>b.cls===cls).map(b=>b.nick));
   (STATE.roster[cls]||[]).forEach(n=>{
-    // Dynamic exclusion: hide students who already booked, EXCEPT the current user.
     if(booked.has(n) && !(me.cls===cls && me.nick===n)) return;
     const o=document.createElement("option"); o.value=n; o.textContent=n; sel.appendChild(o);
   });
   if(me.cls===cls && me.nick) sel.value=me.nick;
 }
+
 function updateMineBand(){
   const b = myBooking();
   const band = $("#mineband");
@@ -275,11 +251,10 @@ function renderSchedule(){
     root.innerHTML = '<div class="empty">No dates have been opened yet. Check back later.</div>';
     return;
   }
-  const taken = new Map(); // "date|slot" -> {cls,nick}
+  const taken = new Map();
   STATE.bookings.forEach(b=> taken.set(b.date+"|"+b.slotId, b));
   const mine = myBooking();
 
-  // group columns by their group label, preserving order
   const groups = [];
   sched.columns.forEach(c=>{
     let g = groups[groups.length-1];
@@ -287,36 +262,104 @@ function renderSchedule(){
     g.cols.push(c);
   });
 
-  let html = "";
-  sched.rows.forEach(rw=>{
-    const f = fmtDate(rw.date);
-    html += `<div class="dategroup"><div class="dhead"><span class="dnum">${f.num}</span><span class="dday">${f.day}</span></div>`;
-    groups.forEach(g=>{
-      if(g.label) html += `<div class="grplbl">${g.label}</div>`;
-      html += `<div class="slots">`;
-      g.cols.forEach(c=>{
-        const key = rw.date+"|"+c.id;
-        const bk = taken.get(key);
-        const perDateUnavail = rw.unavailable && rw.unavailable[c.id];
-        const unavailable = c.unavailable || perDateUnavail;
-        let cls="slot", label="", clickable=false;
-        if(unavailable){ cls+=" unavail"; label="Unavailable"; }
-        else if(bk){
-          if(mine && bk.date===mine.date && bk.slotId===mine.slotId){ cls+=" mine"; label="You ✓"; }
-          else{ cls+=" taken unavail"; label="Unavailable"; }
-        }else{ cls+=" avail"; label="Open · tap to book"; clickable = !!me.nick && !mine; }
-        html += `<button class="${cls}" ${clickable?`data-date="${rw.date}" data-slot="${c.id}"`:"disabled"}>
-          <span class="time">${c.start}–${c.end}</span>
-          <span class="st">${label}</span></button>`;
-      });
-      html += `</div>`;
-    });
-    html += `</div>`;
+  const weeks = {};
+  sched.rows.forEach(rw => {
+      const weekLabel = getWeekStartLabel(rw.date);
+      if(!weeks[weekLabel]) weeks[weekLabel] = [];
+      weeks[weekLabel].push(rw);
   });
-  root.innerHTML = html;
 
+  let html = "";
+  let weekIdx = 0;
+  let dayIdx = 0;
+
+  for (const [weekLabel, rowsInWeek] of Object.entries(weeks)) {
+      weekIdx++;
+      let wId = "w" + weekIdx;
+      let isWeekOpen = expandedState.has(wId);
+
+      let weekHtml = `<div class="weekgroup">
+                        <div class="weekhead" onclick="toggleEl('${wId}')">
+                          <span class="toggle-btn">${isWeekOpen ? '-' : '+'}</span>${weekLabel}
+                        </div>
+                        <div class="week-content ${isWeekOpen ? '' : 'hidden'}">`;
+
+      rowsInWeek.forEach(rw=>{
+        dayIdx++;
+        let dId = "d" + dayIdx;
+        let isDayOpen = expandedState.has(dId);
+        const f = fmtDate(rw.date);
+        
+        let dayHtml = `<div class="dategroup">
+                         <div class="dhead" onclick="toggleEl('${dId}')">
+                           <span class="toggle-btn">${isDayOpen ? '-' : '+'}</span>
+                           <span class="dnum">${f.num}</span><span class="dday">${f.day}</span>
+                         </div>
+                         <div class="${isDayOpen ? '' : 'hidden'}">`;
+                         
+        let availableSlotsInDay = 0;
+        let daySlotsHtml = "";
+
+        groups.forEach(g=>{
+          let groupHtml = "";
+          if(g.label) groupHtml += `<div class="grplbl">${g.label}</div>`;
+          groupHtml += `<div class="slots">`;
+          
+          let availableSlotsInGroup = 0;
+
+          g.cols.forEach(c=>{
+            const key = rw.date+"|"+c.id;
+            const bk = taken.get(key);
+            const perDateUnavail = rw.unavailable && rw.unavailable[c.id];
+            const unavailable = c.unavailable || perDateUnavail;
+            
+            if(unavailable) return;
+            let isMine = false;
+            if(bk) {
+               if(mine && bk.date===mine.date && bk.slotId===mine.slotId) {
+                  isMine = true;
+               } else {
+                  return; // Belongs to someone else -> Hide it
+               }
+            }
+
+            availableSlotsInGroup++;
+            availableSlotsInDay++;
+            
+            let cls="slot", label="", clickable=false;
+            if(isMine){ 
+                cls+=" mine"; label="You ✓"; 
+            } else { 
+                cls+=" avail"; label="Open · tap to book"; clickable = !!me.nick && !mine; 
+            }
+            
+            groupHtml += `<button class="${cls}" ${clickable?`data-date="${rw.date}" data-slot="${c.id}"`:"disabled"}>
+              <span class="time">${c.start}–${c.end}</span>
+              <span class="st">${label}</span></button>`;
+          });
+          
+          groupHtml += `</div>`;
+          if (availableSlotsInGroup > 0) daySlotsHtml += groupHtml;
+        });
+
+        // Display the specific text if there are absolutely no slots available to book on this day.
+        if (availableSlotsInDay === 0) {
+            dayHtml += `<div class="empty">Unfortunately, there are no timeslots available for this day. Please select another day.</div>`;
+        } else {
+            dayHtml += daySlotsHtml;
+        }
+
+        dayHtml += `</div></div>`;
+        weekHtml += dayHtml;
+      });
+
+      weekHtml += `</div></div>`;
+      html += weekHtml;
+  }
+  
+  root.innerHTML = html;
   root.querySelectorAll("button.slot[data-slot]").forEach(btn=>{
-    btn.addEventListener("click", ()=> reserve(btn.dataset.date, btn.dataset.slot));
+      btn.addEventListener("click", ()=> reserve(btn.dataset.date, btn.dataset.slot));
   });
 }
 
@@ -328,7 +371,7 @@ async function reserve(date, slotId){
   if(r && r.ok && r.state){
     STATE = r.state; afterChange(); confirmBooking();
   }else if(r && r.fallback){
-    await load(); // confirm against server
+    await load(); 
     if(myBooking()){ afterChange(); confirmBooking(); }
     else { toast("Submitted — refreshing…"); afterChange(); }
   }else{
@@ -343,7 +386,6 @@ function confirmBooking(){
   const t = col ? `${col.start}–${col.end}` : b.slotId;
   $("#confirmText").innerHTML = `Reservation confirmed for <b>${f.num} ${f.day}</b>, ${t}. Your slot is now booked.`;
   $("#confirm").classList.remove("hidden");
-  // Scroll the display up to the top to show the confirmation.
   window.scrollTo({ top:0, behavior:"smooth" });
 }
 async function cancel(){
@@ -367,7 +409,6 @@ function prettyErr(e){
 function afterChange(){ renderAll(); }
 function renderAll(){ renderNames(); updateMineBand(); renderSchedule(); }
 
-/* ---- events ---- */
 $("#selClass").addEventListener("change", e=>{
   me.cls = e.target.value; me.nick="";
   renderNames(); updateMineBand(); renderSchedule();
@@ -376,16 +417,13 @@ $("#selName").addEventListener("change", e=>{
   me.nick = e.target.value;
   updateMineBand(); renderSchedule();
 });
-$("#dimToggle").addEventListener("change", e=> document.body.classList.toggle("dim", e.target.checked));
 $("#btnCancel").addEventListener("click", cancel);
 
 load();
-// Live sync: poll so every open student session sees new reservations quickly.
 setInterval(async ()=>{
   try{
     const r=await fetch(API_URL); STATE=await r.json();
     renderAll();
-    // If my own booking vanished (e.g. teacher removed it), drop the banner.
     if(!myBooking()) $("#confirm").classList.add("hidden");
   }catch(_){}
 }, 5000);

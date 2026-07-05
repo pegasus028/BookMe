@@ -65,12 +65,25 @@
   .cal .d.on{background:var(--gold); color:#fff7e6; border-color:var(--gold-deep)}
   .cal .d.today{border-color:var(--gold-deep)}
 
-  /* grid table */
-  .scroll{overflow:auto; border:1px solid var(--line); border-radius:12px; background:var(--paper)}
+  /* grid table with Freeze Panes */
+  .scroll{overflow:auto; border:1px solid var(--line); border-radius:12px; background:var(--paper); max-height:calc(100vh - 350px); min-height:400px}
   table.grid{border-collapse:separate; border-spacing:0; min-width:100%; font-size:14px}
   table.grid th, table.grid td{border-bottom:1px solid var(--line); border-right:1px solid var(--line);
     padding:6px 8px; text-align:center; white-space:nowrap}
-  table.grid th{background:var(--paper-2); position:sticky; top:0; z-index:2}
+  
+  /* Sticky headers */
+  table.grid thead { position: sticky; top: 0; z-index: 10; background: var(--paper-2); box-shadow: 0 1px 0 var(--line); }
+  table.grid thead th { background: var(--paper-2); }
+  
+  /* Sticky left columns */
+  .stick-c1 { position: sticky; left: 0; z-index: 11; background: var(--paper-2); min-width: 38px; border-right: none !important; }
+  .stick-c2 { position: sticky; left: 38px; z-index: 11; background: var(--paper-2); min-width: 44px; border-right: none !important; }
+  .stick-c3 { position: sticky; left: 82px; z-index: 11; background: var(--paper-2); border-right: 2px solid var(--line) !important; }
+  .stick-c23 { position: sticky; left: 38px; z-index: 11; background: var(--paper-2); border-right: 2px solid var(--line) !important; }
+  
+  thead .stick-c1, thead .stick-c2, thead .stick-c3, thead .stick-c23 { z-index: 12; }
+  .stick-c3::after, .stick-c23::after { content: ""; position: absolute; top: 0; right: -4px; bottom: -1px; width: 4px; box-shadow: inset 4px 0 4px -4px #3a2f1c40; pointer-events: none; }
+
   table.grid .rowctrl, table.grid .colctrl{font-family:"Space Mono",monospace}
   .icb{cursor:pointer; border:1px solid var(--line-2); border-radius:6px; background:var(--paper);
     width:24px; height:24px; line-height:1; font-size:15px; padding:0; color:var(--gold-deep)}
@@ -100,7 +113,7 @@
   .avbtn.off{background:var(--grey-bg)}
   .rmbk{cursor:pointer; color:var(--bad); border:none; background:none; font-size:12px; padding:0 0 0 4px}
 
-  /* reports */
+  /* reports pane */
   .reports{display:grid; grid-template-columns:1.3fr 1fr; gap:18px}
   @media(max-width:900px){.reports{grid-template-columns:1fr} .cal{width:100%}}
   table.rep{width:100%; border-collapse:collapse; font-size:14px}
@@ -110,6 +123,12 @@
   .chip{font-size:13px; background:var(--paper); border:1px solid var(--line-2); border-radius:99px; padding:3px 10px}
   .muted{color:var(--ink-soft)}
   .count{font-family:"Space Mono",monospace; font-size:12px; color:var(--gold-deep)}
+
+  /* Accordion styling for Reports */
+  .toggle-btn { font-family: "Space Mono", monospace; font-weight: bold; margin-right: 8px; color: var(--gold-deep); cursor: pointer; display: inline-block; width: 16px; text-align: center;}
+  table.rep tr.weekband td { background: var(--line-2); color: var(--ink); font-family: "Fraunces", serif; font-weight: 600; font-size: 15px; padding: 10px 9px; cursor: pointer; border-bottom: 1px solid var(--ink-soft); }
+  table.rep tr.dateband td { background: var(--paper); border-bottom: 1px solid var(--line-2); font-family: "Fraunces", serif; font-weight: 600; font-size: 14px; padding: 8px 9px; cursor: pointer; }
+  .hidden { display: none !important; }
 
   .toast{position:fixed; right:20px; bottom:20px; background:var(--ink); color:var(--paper);
     padding:11px 16px; border-radius:10px; font-size:15px; opacity:0; transform:translateY(14px);
@@ -121,7 +140,6 @@
   .gate h3{font-family:"Fraunces",serif; font-weight:500; margin:0 0 4px}
   .gate input{width:100%; margin:12px 0; text-align:center; padding:11px; font-size:18px}
   .hint{font-size:13px; color:var(--ink-soft)}
-  .hidden{display:none !important}
 </style>
 </head>
 <body>
@@ -212,13 +230,13 @@
 
 <script>
 /* ====== CONFIG ====== */
-const API_URL = "https://script.google.com/macros/s/AKfycbwYyLV6xgQOzi14X_YOoYtRuQc8WlZkGiWfGFMxWhIfi0iLv_tZB_IVD7kfBvRrByR99A/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwoLn0lRT8dxFrFtWe40g29CkrOsW0ZKrN6qL79bjX-RHj-hWGEvRIINXZ63PJhpXkqKQ/exec";
 /* ==================== */
 
-let STATE = null;       // server state
-let SCHED = null;       // editable local copy of schedule
+let STATE = null;
+let SCHED = null;
 let PASS = "";
-let TEMPLATE = null;    // saved column+offset template
+let TEMPLATE = null;
 const $ = s => document.querySelector(s);
 const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
@@ -229,9 +247,9 @@ function pad(n){ return String(n).padStart(2,"0"); }
 function isoOf(y,m,d){ return `${y}-${pad(m)}-${pad(d)}`; }
 function parseISO(s){
   s=String(s).trim();
-  const m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);   // "YYYY-MM-DD..."
+  const m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if(m) return new Date(+m[1], +m[2]-1, +m[3]);
-  const d=new Date(s);                            // fallback: Date-object string, etc.
+  const d=new Date(s);
   return isNaN(d) ? null : d;
 }
 function dayOf(s){ const d=parseISO(s); return d?DAYS[d.getDay()]:""; }
@@ -322,9 +340,8 @@ function removeColumn(idx){
   SCHED.columns.splice(idx,1); reflowTimes(); renderGrid(); markDirty();
 }
 
-/* ---- period (4-slot block) management ---- */
+/* ---- period management ---- */
 function nextPeriodLabel(){
-  // Highest "Period N" already present, plus one.
   let max=0;
   SCHED.columns.forEach(c=>{ const m=/^period\s+(\d+)$/i.exec((c.group||"").trim()); if(m && +m[1]>max) max=+m[1]; });
   return "Period "+(max+1);
@@ -352,7 +369,6 @@ function removeLastPeriod(){
   toast("Removed "+(lastGrp.label||"last group"));
 }
 function reflowTimes(){
-  // Adjacency: each slot's start = previous slot's end. Slot 0 keeps its own start.
   for(let i=1;i<SCHED.columns.length;i++){
     const prev=SCHED.columns[i-1], cur=SCHED.columns[i];
     const dur = Math.max(5, toMin(cur.end)-toMin(cur.start));
@@ -363,16 +379,16 @@ function reflowTimes(){
 function stepTime(idx, which, delta){
   const c=SCHED.columns[idx];
   if(which==="start"){
-    if(idx===0){ // first slot's start floats; keep duration
+    if(idx===0){
       const dur=toMin(c.end)-toMin(c.start);
       c.start=toHHMM(toMin(c.start)+delta);
       c.end=toHHMM(toMin(c.start)+Math.max(5,dur));
-    }else{ // can't move a follower's start independently; nudge previous end instead
+    }else{
       stepTime(idx-1,"end",delta); return;
     }
-  }else{ // end
+  }else{
     let e=toMin(c.end)+delta;
-    if(e<=toMin(c.start)+4) e=toMin(c.start)+5; // min 5-min slot
+    if(e<=toMin(c.start)+4) e=toMin(c.start)+5;
     c.end=toHHMM(e);
   }
   reflowTimes(); renderGrid(); markDirty();
@@ -399,26 +415,16 @@ function renderGrid(){
   const cols=SCHED.columns, spans=groupSpans(), bm=bookMap();
   const filter=$("#filterClass").value;
   let h="";
-  // row 1: add/remove column controls
-  h+="<thead>";
-  h+="<tr><th></th><th colspan='2'></th>";
+  h+="<thead><tr><th class='stick-c1'></th><th class='stick-c23' colspan='2'></th>";
   cols.forEach((c,i)=> h+=`<th class="colctrl"><button class="icb" data-act="colplus" data-i="${i}" title="Add column after">+</button> <button class="icb rm" data-act="colminus" data-i="${i}" title="Remove column">−</button></th>`);
-  h+="</tr>";
-  // row 2: group labels (editable, merged)
-  h+="<tr><th></th><th colspan='2'></th>";
+  h+="</tr><tr><th class='stick-c1'></th><th class='stick-c23' colspan='2'></th>";
   spans.forEach(s=> h+=`<th class="grouphdr" colspan="${s.span}"><input value="${s.label.replace(/"/g,'&quot;')}" data-act="group" data-i="${s.firstIdx}" placeholder="—"></th>`);
-  h+="</tr>";
-  // row 3: group time reflection
-  h+="<tr><th></th><th colspan='2'></th>";
+  h+="</tr><tr><th class='stick-c1'></th><th class='stick-c23' colspan='2'></th>";
   spans.forEach(s=>{ const a=cols[s.firstIdx].start, b=cols[s.firstIdx+s.span-1].end;
     h+=`<th class="grptime" colspan="${s.span}">${a}–${b}</th>`; });
-  h+="</tr>";
-  // row 4: slot id + avail toggle
-  h+="<tr><th></th><th>Date</th><th>Day</th>";
+  h+="</tr><tr><th class='stick-c1'></th><th class='stick-c2'>Date</th><th class='stick-c3'>Day</th>";
   cols.forEach((c,i)=> h+=`<th><div class="slotid">${c.id}</div><span class="avbtn ${c.unavailable?'off':''}" data-act="colav" data-i="${i}">${c.unavailable?'Locked':'Open'}</span></th>`);
-  h+="</tr>";
-  // row 5: per-slot time steppers
-  h+="<tr><th></th><th colspan='2'></th>";
+  h+="</tr><tr><th class='stick-c1'></th><th class='stick-c23' colspan='2'></th>";
   cols.forEach((c,i)=> h+=`<th><div class="timecell">
       <div class="timepair"><span>${c.start}</span><span class="step"><button data-act="su" data-i="${i}">▲</button><button data-act="sd" data-i="${i}">▼</button></span></div>
       <div class="timepair"><span>${c.end}</span><span class="step"><button data-act="eu" data-i="${i}">▲</button><button data-act="ed" data-i="${i}">▼</button></span></div>
@@ -430,8 +436,8 @@ function renderGrid(){
   }
   SCHED.rows.forEach(rw=>{
     const f=parseISO(rw.date);
-    h+=`<tr><td class="rowctrl"><button class="icb rm" data-act="rowdel" data-d="${rw.date}" title="Remove date">−</button></td>`;
-    h+=`<td><span class="rowdate">${dateNum(rw.date)}</span></td><td><span class="rowday">${rw.day||dayOf(rw.date)}</span></td>`;
+    h+=`<tr><td class="rowctrl stick-c1"><button class="icb rm" data-act="rowdel" data-d="${rw.date}" title="Remove date">−</button></td>`;
+    h+=`<td class="stick-c2"><span class="rowdate">${dateNum(rw.date)}</span></td><td class="stick-c3"><span class="rowday">${rw.day||dayOf(rw.date)}</span></td>`;
     cols.forEach(c=>{
       const key=rw.date+"|"+c.id, bk=bm.get(key);
       const rowU = rw.unavailable && rw.unavailable[c.id];
@@ -502,8 +508,6 @@ $("#btnAddRange").onclick=()=>{
 
 /* ---- weekly template ---- */
 $("#btnSaveTpl").onclick=()=>{
-  // Remember the columns (incl. their column-level locks) AND the per-date
-  // cell locks, keyed by weekday so they reapply to the matching day next week.
   const locksByDay={};
   SCHED.rows.forEach(r=>{
     const wd=r.day||dayOf(r.date);
@@ -519,8 +523,6 @@ $("#btnSaveTpl").onclick=()=>{
 };
 $("#btnApplyTpl").onclick=()=>{
   if(!TEMPLATE) return;
-  // Apply template columns, then clone each existing dated row forward by 7 days,
-  // reapplying the saved column locks and the per-weekday cell locks.
   SCHED.columns = JSON.parse(JSON.stringify(TEMPLATE.columns));
   const validIds = new Set(SCHED.columns.map(c=>c.id));
   const existing = SCHED.rows.map(r=>r.date);
@@ -530,7 +532,6 @@ $("#btnApplyTpl").onclick=()=>{
     if(SCHED.rows.some(r=>r.date===newIso)) return;
     const wd=dayOf(newIso);
     const saved=(TEMPLATE.locksByDay&&TEMPLATE.locksByDay[wd])||{};
-    // keep only locks whose slot id still exists in the template columns
     const locks={};
     Object.keys(saved).forEach(id=>{ if(validIds.has(id)) locks[id]=true; });
     SCHED.rows.push({date:newIso, day:wd, unavailable:locks});
@@ -540,40 +541,121 @@ $("#btnApplyTpl").onclick=()=>{
   toast("Template applied; next week added with locks");
 };
 
-/* ---- reports ---- */
+/* ---- reports and accordion helpers ---- */
+const expandedRepState = new Set();
+function toggleRep(id) {
+  if (expandedRepState.has(id)) { expandedRepState.delete(id); } 
+  else { expandedRepState.add(id); }
+  renderReportsData(); 
+}
+
+function getWeekStartLabel(iso) {
+  if(!iso) return "Unknown Week";
+  const p = String(iso).split("-").map(Number);
+  const dt = new Date(p[0], p[1]-1, p[2]);
+  const day = dt.getDay();
+  const diff = dt.getDate() - day + (day === 0 ? -6 : 1);
+  const mon = new Date(dt.setDate(diff));
+  const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return `Week of ${mon.getDate()} ${months[mon.getMonth()]} ${mon.getFullYear()}`;
+}
+
 function renderClasses(){
   const sel=$("#filterClass"); const cur=sel.value;
   sel.innerHTML='<option value="">All classes</option>';
   Object.keys(STATE.roster).sort().forEach(c=>{const o=document.createElement("option");o.value=c;o.textContent="Class "+c;sel.appendChild(o);});
   if(cur) sel.value=cur;
 }
-function renderReports(){
+
+function renderReportsData() {
   const filter=$("#filterClass").value;
   const colById={}; SCHED.columns.forEach(c=>colById[c.id]=c);
+  
   // reservations
   let rows = STATE.bookings.slice().filter(b=>!filter||b.cls===filter);
-  rows.sort((a,b)=> a.date<b.date?-1:a.date>b.date?1:(a.slotId<b.slotId?-1:1));
+  
+  // Sort reserved timeslots strictly by Time for each Day
+  rows.sort((a, b) => {
+    if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+    const cA = colById[a.slotId];
+    const cB = colById[b.slotId];
+    const tA = cA ? toMin(cA.start) : 9999;
+    const tB = cB ? toMin(cB.start) : 9999;
+    return tA - tB;
+  });
+  
   $("#bkCount").textContent="("+rows.length+")";
-  $("#bkBody").innerHTML = rows.length? rows.map(b=>{
-    const c=colById[b.slotId];
-    return `<tr><td>${dateNum(b.date)} ${dayOf(b.date)}</td><td>${c?c.start+"–"+c.end:b.slotId}</td><td>${b.cls}</td><td>${b.nick}</td>
-      <td><button class="rmbk" data-d="${b.date}" data-s="${b.slotId}">✕</button></td></tr>`;
-  }).join("") : `<tr><td colspan="5" class="muted">No reservations yet.</td></tr>`;
+  
+  let html = "";
+  if (rows.length === 0) {
+    html = `<tr><td colspan="5" class="muted">No reservations yet.</td></tr>`;
+  } else {
+    let lastWeek = null;
+    let lastDate = null;
+    let weekIdx = 0;
+    let dayIdx = 0;
+
+    rows.forEach(b => {
+      const currentWeek = getWeekStartLabel(b.date);
+      const c = colById[b.slotId];
+
+      if (currentWeek !== lastWeek) {
+        weekIdx++;
+        let wId = "rw" + weekIdx;
+        let wOpen = expandedRepState.has(wId);
+        html += `<tr class="weekband" onclick="toggleRep('${wId}')">
+                   <td colspan="5"><span class="toggle-btn">${wOpen ? '-' : '+'}</span>${currentWeek}</td>
+                 </tr>`;
+        lastWeek = currentWeek;
+      }
+
+      if (b.date !== lastDate) {
+        dayIdx++;
+        let wId = "rw" + weekIdx;
+        let wOpen = expandedRepState.has(wId);
+        let dId = "rd" + dayIdx;
+        let dOpen = expandedRepState.has(dId);
+        
+        html += `<tr class="dateband ${wOpen ? '' : 'hidden'}" onclick="toggleRep('${dId}')">
+                   <td colspan="5"><span class="toggle-btn">${dOpen ? '-' : '+'}</span>${dateNum(b.date)} ${dayOf(b.date)}</td>
+                 </tr>`;
+        lastDate = b.date;
+      }
+      
+      let wId = "rw" + weekIdx;
+      let dId = "rd" + dayIdx;
+      let showSlots = expandedRepState.has(wId) && expandedRepState.has(dId);
+
+      html += `<tr class="slotrow ${showSlots ? '' : 'hidden'}">
+        <td style="padding-left:32px; color:var(--ink-soft); font-size:12px;">↳</td>
+        <td>${c ? c.start + "–" + c.end : b.slotId}</td>
+        <td>${b.cls}</td>
+        <td>${b.nick}</td>
+        <td><button class="rmbk" data-d="${b.date}" data-s="${b.slotId}" title="Remove booking">✕</button></td>
+      </tr>`;
+    });
+  }
+  
+  $("#bkBody").innerHTML = html;
   $("#bkBody").querySelectorAll(".rmbk").forEach(b=> b.onclick=()=>adminUnbook(b.dataset.d,b.dataset.s));
 
   // unreserved roster
   const bookedSet=new Set(STATE.bookings.map(b=>b.cls+"|"+b.nick));
   const classes = filter? [filter] : Object.keys(STATE.roster).sort();
-  let totalUn=0, html="";
+  let totalUn=0, unHtml="";
   classes.forEach(cls=>{
     const un=(STATE.roster[cls]||[]).filter(n=>!bookedSet.has(cls+"|"+n));
     totalUn+=un.length;
-    html+=`<div style="margin-bottom:12px"><div class="muted" style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">Class ${cls} · ${un.length} left</div>`;
-    html+= un.length? `<div class="chips">${un.map(n=>`<span class="chip">${n}</span>`).join("")}</div>` : `<span class="muted">Everyone has booked ✓</span>`;
-    html+=`</div>`;
+    unHtml+=`<div style="margin-bottom:12px"><div class="muted" style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">Class ${cls} · ${un.length} left</div>`;
+    unHtml+= un.length? `<div class="chips">${un.map(n=>`<span class="chip">${n}</span>`).join("")}</div>` : `<span class="muted">Everyone has booked ✓</span>`;
+    unHtml+=`</div>`;
   });
   $("#unCount").textContent="("+totalUn+")";
-  $("#unBody").innerHTML=html;
+  $("#unBody").innerHTML=unHtml;
+}
+
+function renderReports() {
+  renderReportsData();
 }
 
 function renderAll(){ renderCal(); renderGrid(); renderReports(); }
